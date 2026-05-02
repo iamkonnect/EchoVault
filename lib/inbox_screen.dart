@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/chat_provider.dart';
+import '../providers/user_provider.dart';
 import '../models/message_model.dart';
 import 'services/image_utils.dart';
 
@@ -73,6 +74,52 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with TickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(userProvider);
+    
+    // Authentication Guard: Redirect to login if not authenticated
+    if (user == null) {
+      return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(
+          title: const Text('Messages'),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.lock_outlined, size: 64, color: Colors.grey[400]),
+              const SizedBox(height: 24),
+              const Text(
+                'Sign in to view messages',
+                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'You need to be logged in to access your messages',
+                style: TextStyle(color: Colors.grey, fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton.icon(
+                onPressed: () => Navigator.pushNamed(context, '/login'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.purple,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                ),
+                icon: const Icon(Icons.login, color: Colors.white),
+                label: const Text(
+                  'Sign In',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final chatState = ref.watch(chatProvider);
 
     return Scaffold(
@@ -148,7 +195,6 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with TickerProviderSt
       floatingActionButton: _currentView == ViewMode.inbox
           ? FloatingActionButton(
               onPressed: () {
-                // Mock new conversation
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('New conversation feature coming soon! 🎵')),
                 );
@@ -165,7 +211,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with TickerProviderSt
       padding: const EdgeInsets.all(16),
       itemCount: conversations.length,
       itemBuilder: (context, index) {
-        final convo = conversations[index] as dynamic; // Since Conversation not typed yet
+        final convo = conversations[index] as dynamic;
         return _buildConversationTile(convo, index);
       },
     );
@@ -191,7 +237,6 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with TickerProviderSt
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                // Avatar with online status
                 Stack(
                   children: [
                     CircleAvatar(
@@ -301,13 +346,11 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with TickerProviderSt
             },
           ),
         ),
-        // Input + Sticker Tray
         AnimatedSize(
           duration: const Duration(milliseconds: 300),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Input bar
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -357,18 +400,17 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with TickerProviderSt
                         heroTag: 'send',
                         backgroundColor: Colors.purple,
                         onPressed: () {
-                              if (_messageController.text.trim().isNotEmpty) {
-                                ref.read(chatProvider.notifier).addMessage(_messageController.text.trim(), MessageType.text);
-                                _messageController.clear();
-                              }
-                            },
+                          if (_messageController.text.trim().isNotEmpty) {
+                            ref.read(chatProvider.notifier).addMessage(_messageController.text.trim(), MessageType.text);
+                            _messageController.clear();
+                          }
+                        },
                         child: const Icon(Icons.send, color: Colors.white, size: 20),
                       ),
                     ],
                   ),
                 ),
               ),
-              // Sticker Tray
               if (_showStickers)
                 AnimatedBuilder(
                   animation: _stickerController,
@@ -468,18 +510,14 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with TickerProviderSt
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4),
         child: Column(
-          crossAxisAlignment:
-              isSent ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: isSent ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             if (!isSent)
               Padding(
                 padding: const EdgeInsets.only(left: 60),
                 child: Text(
                   _formatTime(message.timestamp),
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 11,
-                  ),
+                  style: TextStyle(color: Colors.grey[500], fontSize: 11),
                 ),
               ),
             Container(
@@ -535,10 +573,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with TickerProviderSt
                 padding: const EdgeInsets.only(right: 60),
                 child: Text(
                   _formatTime(message.timestamp),
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 11,
-                  ),
+                  style: TextStyle(color: Colors.grey[500], fontSize: 11),
                 ),
               ),
           ],
@@ -555,4 +590,3 @@ class _InboxScreenState extends ConsumerState<InboxScreen> with TickerProviderSt
     return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
   }
 }
-

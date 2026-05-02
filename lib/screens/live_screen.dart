@@ -4,7 +4,6 @@ import 'dart:developer' as developer;
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../providers/user_provider.dart';
-import '../providers/artist_provider.dart' as artist;
 import '../providers/app_providers.dart';
 import '../models/user.dart';
 
@@ -153,7 +152,6 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
 
                 // Call API to start live stream
                 try {
-                  final artistService = ref.read(artist.artistServiceProvider);
                   final artistService = ref.read(artistServiceProvider);
                   final result = await artistService.startLiveStream(title: title);
 

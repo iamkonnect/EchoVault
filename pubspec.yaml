@@ -35,6 +35,7 @@ dependencies:
   # WebSocket & Real-time
   socket_io_client: ^2.0.2
   camera: ^0.10.5+9
+  flutter_webrtc: ^0.9.45
   # Encryption for sensitive data
   flutter_secure_storage: ^9.0.0
   # State management & async

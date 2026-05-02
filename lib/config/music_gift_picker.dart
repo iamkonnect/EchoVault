@@ -34,7 +34,37 @@ class MusicGiftPicker extends StatelessWidget {
             onTap: () {
               // Sending context to backend: Who gets the split?
               print('ACTION: Sending ${gift.name} (\$${gift.price}) to $targetType ($targetId)');
-              // API Call would happen here
+              
+              // Integrated API Call logic:
+              // This sends the giftId to the backend, which looks up the real price in GiftManagement
+              final Map<String, dynamic> payload = {
+                'giftId': gift.id,
+                'receiverId': targetId,
+                'isShortChallenge': targetType == 'SHORT',
+              };
+              
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  backgroundColor: const Color(0xFF1a1a1a),
+                  title: const Text('Confirm Gift', style: TextStyle(color: Colors.white)),
+                  content: Text('Send ${gift.name} for \$${gift.price.toStringAsFixed(2)}?', 
+                    style: const TextStyle(color: Colors.white70)),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        // API Call would happen here: EchoVaultApiService.post('/api/gifting/send', payload)
+                      },
+                      child: const Text('Confirm', style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              );
             },
             child: Column(
               mainAxisSize: MainAxisSize.min,

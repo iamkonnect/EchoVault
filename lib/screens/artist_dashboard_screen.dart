@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/auth_provider.dart';
+import '../providers/auth_provider.dart' hide artistServiceProvider;
+import '../providers/app_providers.dart';
 import '../providers/artist_provider.dart' as artist;
+import '../config/api_config.dart';
 
 class ArtistDashboardScreen extends ConsumerWidget {
   const ArtistDashboardScreen({super.key});
@@ -43,12 +45,24 @@ final artistInsights = ref.watch(artist.artistInsightsProvider);
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Welcome back, ${authState.user!['name']}',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            'Welcome back, ${authState.user!['name']}',
+                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          if (authState.user!['isVerified'] == true) ...[
+                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.music_note,
+                              color: Colors.blueAccent,
+                              size: 22,
+                            ),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -95,9 +109,9 @@ final artistInsights = ref.watch(artist.artistInsightsProvider);
                           color: Colors.blue,
                         ),
                         _StatCard(
-                          title: 'Total Earnings',
+                          title: 'Total Gifts',
                           value: '\$${((insights['totalEarnings'] ?? 0) as num).toStringAsFixed(2)}',
-                          icon: Icons.attach_money,
+                          icon: ApiConfig.giftingIcon,
                           color: Colors.amber,
                         ),
                         _StatCard(
@@ -109,7 +123,7 @@ final artistInsights = ref.watch(artist.artistInsightsProvider);
                         _StatCard(
                           title: 'Shorts Uploaded',
                           value: '${(insights['shorts'] as List?)?.length ?? 0}',
-                          icon: Icons.video_library,
+                          icon: Icons.bolt, // Lightning bolt icon for "Shorts"
                           color: Colors.purple,
                         ),
                       ],
@@ -292,7 +306,7 @@ final artistInsights = ref.watch(artist.artistInsightsProvider);
               if (title.isEmpty) return;
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Starting live stream...')));
-final artistService = ref.read(artist.artistServiceProvider);
+final artistService = ref.read(artistServiceProvider);
               final result = await artistService.startLiveStream(title: title);
               if (result['success']) {
                 final streamData = result['data'];
@@ -374,7 +388,7 @@ final artistService = ref.read(artist.artistServiceProvider);
               }
 
               // Call withdrawal API
-await ref.read(artist.artistServiceProvider).requestWithdrawal(amount: amount);
+await ref.read(artistServiceProvider).requestWithdrawal(amount: amount);
               if (context.mounted) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(

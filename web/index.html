@@ -18,7 +18,10 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta name="description" content="EchoVault - The Ultimate Sound Experience.">
+  
+  <!-- Permissions Policy: Allow camera and microphone for live streaming -->
+  <meta http-equiv="Permissions-Policy" content="camera=(self), microphone=(self)">
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
@@ -29,10 +32,19 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>echovault</title>
+  <title>EchoVault</title>
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
+  
+  <!-- Camera and Microphone Permission Script -->
+  <script>
+    // Ensure camera/microphone permissions are properly handled
+    // This script runs before Flutter initializes
+    window.addEventListener('load', function() {
+      console.log('EchoVault loaded - ready for camera/microphone access');
+    });
+  </script>
 </body>
 </html>

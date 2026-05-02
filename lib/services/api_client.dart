@@ -205,6 +205,20 @@ class ApiClient {
   }
 }
 
+/// Stub Endpoint Mapper - maps endpoint aliases to actual paths
+class EndpointMapper {
+  static String mapEndpoint(String endpoint) {
+    // Direct pass-through - endpoint is used as-is
+    if (endpoint.startsWith('/')) return endpoint;
+    return '/$endpoint';
+  }
+}
+
+/// Stub Response Normalizer - returns response as-is
+class ResponseNormalizer {
+  static dynamic normalize(dynamic body) => body;
+}
+
 /// Custom API Exception
 class ApiException implements Exception {
   final String message;
