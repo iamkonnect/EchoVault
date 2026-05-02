@@ -46,3 +46,10 @@ app.*.map.json
 
 # Java heap dumps
 *.hprof
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
