@@ -35,9 +35,7 @@ class RealtimeService {
   Stream<Map<String, dynamic>> get notifications => _notificationController.stream;
   bool get isConnected => _isConnected;
 
-  RealtimeService({
-    this.baseUrl = 'http://localhost:5000',
-  });
+
 
   /// Initialize WebSocket connection
   Future<void> connect(String token) async {

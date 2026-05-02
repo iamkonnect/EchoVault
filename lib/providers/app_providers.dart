@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
+import '../config/api_config.dart';
 import '../services/api_client.dart';
 import '../services/auth_service_v2.dart';
 import '../services/api_service_v2.dart';
@@ -10,17 +11,10 @@ import '../services/cache_service.dart';
 
 // ============ API CLIENT PROVIDERS ============
 
-/// Global API client instance
+/// Global API client instance with dynamic configuration
 final apiClientProvider = Provider<ApiClient>((ref) {
-  // Use 10.0.2.2 for Android Emulator, localhost for Web/iOS
-  // In production, this would be your deployed domain
-  const String baseUrl = identical(0, 0.0) 
-      ? 'http://localhost:5000' 
-      : 'http://10.0.2.2:5000';
-
   return ApiClient(
-    baseUrl: baseUrl,
-    isWeb: identical(0, 0.0),
+    baseUrl: ApiConfig.baseUrl,
   );
 });
 
@@ -59,14 +53,9 @@ final cacheServiceProvider = FutureProvider<CacheService>((ref) async {
 
 // ============ REALTIME SERVICE PROVIDERS ============
 
-/// Real-time WebSocket service
+/// Real-time WebSocket service with dynamic configuration
 final realtimeServiceProvider = Provider<RealtimeService>((ref) {
-  // Use 10.0.2.2 for Android Emulator, localhost for Web/iOS
-  // In production, this would be your deployed domain
-  const String wsBaseUrl = identical(0, 0.0) 
-      ? 'http://localhost:5000' 
-      : 'http://10.0.2.2:5000';
-  return RealtimeService(baseUrl: wsBaseUrl);
+  return RealtimeService(baseUrl: ApiConfig.realtimeUrl);
 });
 
 /// WebSocket connection state
