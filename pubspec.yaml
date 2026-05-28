@@ -1,0 +1,50 @@
+name: echovault
+description: EchoVault Flutter app
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  flutter_riverpod: ^2.5.1
+  http: ^1.2.2
+  dio: ^5.6.0
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  just_audio: ^0.9.39
+  just_audio_background: ^0.0.1-beta.13
+  intl: ^0.19.0
+
+  # Missing dependencies required by the current codebase
+  shared_preferences: ^2.3.2
+  socket_io_client: ^2.0.3+1
+  camera: ^0.11.0+2
+  permission_handler: ^11.3.1
+  flutter_secure_storage: ^9.2.2
+  audio_service: ^0.18.18
+
+  flutter_localizations:
+    sdk: flutter
+
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.11
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/
+    - assets/assets/
+    - assets/samples/
+

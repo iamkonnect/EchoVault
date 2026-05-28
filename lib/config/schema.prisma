@@ -1,0 +1,134 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ARTIST
+  ADMIN
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  GIFT_SENT
+  GIFT_RECEIVED
+  COIN_PURCHASE
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  name           String
+  password       String
+  role           Role     @default(USER)
+  walletBalance  Float    @default(0.0)
+  country        String?  @default("US")
+  
+  // Verification Requirement (No. 5)
+  isVerified     Boolean  @default(false)
+  verifiedAt     DateTime?
+
+  // Relations
+  songs          Song[]
+  shorts         Short[]
+  liveStreams    LiveStream[]
+  transactions   Transaction[]
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Song {
+  id          String   @id @default(uuid())
+  title       String
+  genre       String
+  audioUrl    String
+  coverArtUrl String?
+  playCount   Int      @default(0)
+  
+  artistId    String
+  artist      User     @relation(fields: [artistId], references: [id])
+  
+  createdAt   DateTime @default(now())
+}
+
+model Short {
+  id             String   @id @default(uuid())
+  title          String
+  description    String?
+  videoUrl       String
+  thumbnailUrl   String?
+  playCount      Int      @default(0)
+  likes          Int      @default(0)
+  giftsReceived  Int      @default(0)
+  
+  artistId       String
+  artist         User     @relation(fields: [artistId], references: [id])
+  
+  createdAt      DateTime @default(now())
+}
+
+model LiveStream {
+  id          String   @id @default(uuid())
+  title       String
+  isLive      Boolean  @default(false)
+  
+  artistId    String
+  artist      User     @relation(fields: [artistId], references: [id])
+  
+  createdAt   DateTime @default(now())
+}
+
+// Managed by Admin Panel for Gift Picker
+model GiftTemplate {
+  id        String   @id @default(uuid())
+  name      String
+  icon      String   // Emoji or URL
+  price     Float
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+// Managed by Admin Panel for Coin Store
+model CoinPackage {
+  id        String   @id @default(uuid())
+  name      String
+  price     Float
+  coins     Int
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Transaction {
+  id                   String            @id @default(uuid())
+  amount               Float
+  type                 TransactionType
+  status               TransactionStatus @default(PENDING)
+  description          String?
+  
+  // Payment Gateway specific
+  paymentGateway       String?           // 'PAYPAL', 'STRIPE', etc.
+  gatewayTransactionId String?           @unique
+  
+  userId               String
+  user                 User              @relation(fields: [userId], references: [id])
+  
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+}

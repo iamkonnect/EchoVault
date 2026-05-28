@@ -1,0 +1,25 @@
+$kind: http-request
+name: Get Recommendations
+method: GET
+url: '{{baseUrl}}/api/tracks/recommendations'
+order: 5000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{authToken}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200", function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response has success: true", function () {
+        var json = pm.response.json();
+        pm.expect(json.success).to.be.true;
+      });
+      pm.test("data.tracks is an array", function () {
+        var json = pm.response.json();
+        pm.expect(json.data.tracks).to.be.an('array');
+      });

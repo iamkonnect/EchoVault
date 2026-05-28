@@ -1,0 +1,12 @@
+$kind: http-request
+name: Get Categories
+method: GET
+url: '{{baseUrl}}/api/tracks/categories'
+order: 4000
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200", function () {
+        pm.response.to.have.status(200);
+      });

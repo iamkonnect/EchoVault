@@ -1,0 +1,66 @@
+name: Deploy to Azure
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login to Azure Container Registry
+        run: az acr login --name ${{ secrets.ACR_NAME }}
+
+      - name: Build & Push Backend Image
+        run: |
+          docker build \
+            -t ${{ secrets.ACR_NAME }}.azurecr.io/echovault-backend:${{ github.sha }} \
+            ../echo-vault-backend
+          docker push ${{ secrets.ACR_NAME }}.azurecr.io/echovault-backend:${{ github.sha }}
+
+      - name: Build & Push Frontend Image
+        run: |
+          docker build \
+            -t ${{ secrets.ACR_NAME }}.azurecr.io/echovault-frontend:${{ github.sha }} \
+            .
+          docker push ${{ secrets.ACR_NAME }}.azurecr.io/echovault-frontend:${{ github.sha }}
+
+      - name: Deploy Backend to Azure Container Instances
+        uses: azure/aci-deploy@v1
+        with:
+          resource-group: ${{ secrets.RESOURCE_GROUP }}
+          dns-name-label: echovault-backend
+          image: ${{ secrets.ACR_NAME }}.azurecr.io/echovault-backend:${{ github.sha }}
+          name: echovault-backend
+          location: eastus
+          ports: 5000
+          environment-variables: NODE_ENV=production PORT=5000
+          secure-environment-variables: >
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+          registry-login-server: ${{ secrets.ACR_NAME }}.azurecr.io
+          registry-username: ${{ secrets.ACR_USERNAME }}
+          registry-password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Deploy Frontend to Azure Container Instances
+        uses: azure/aci-deploy@v1
+        with:
+          resource-group: ${{ secrets.RESOURCE_GROUP }}
+          dns-name-label: echovault-frontend
+          image: ${{ secrets.ACR_NAME }}.azurecr.io/echovault-frontend:${{ github.sha }}
+          name: echovault-frontend
+          location: eastus
+          ports: 80
+          registry-login-server: ${{ secrets.ACR_NAME }}.azurecr.io
+          registry-username: ${{ secrets.ACR_USERNAME }}
+          registry-password: ${{ secrets.ACR_PASSWORD }}

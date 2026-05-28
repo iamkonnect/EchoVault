@@ -1,0 +1,33 @@
+$kind: http-request
+name: Start Stream
+method: POST
+url: '{{baseUrl}}/api/live/streams/start'
+order: 3000
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{authToken}}'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "title": "My Live Stream",
+      "description": "Test stream"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200 or 201", function () {
+        pm.expect(pm.response.code).to.be.oneOf([200, 201]);
+      });
+      var json = pm.response.json();
+      if (json.streamId) {
+        pm.environment.set("streamId", json.streamId);
+      } else if (json.data && json.data.streamId) {
+        pm.environment.set("streamId", json.data.streamId);
+      }

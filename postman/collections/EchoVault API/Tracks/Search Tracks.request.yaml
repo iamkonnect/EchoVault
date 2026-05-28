@@ -1,0 +1,15 @@
+$kind: http-request
+name: Search Tracks
+method: GET
+url: '{{baseUrl}}/api/tracks/search'
+order: 3000
+queryParams:
+  - key: q
+    value: music
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200", function () {
+        pm.response.to.have.status(200);
+      });
