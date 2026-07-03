@@ -4,6 +4,7 @@ import 'api_client.dart';
 
 /// Comprehensive authentication service for EchoVault
 /// Supports user and artist authentication with token management
+/// Implements all authentication endpoints from Postman collection
 class AuthService {
   final ApiClient _apiClient;
   final String baseUrl;
@@ -20,17 +21,19 @@ class AuthService {
     await _apiClient.initializeToken();
   }
 
-  /// Register a new user
+  // ============ USER REGISTRATION ============
+
+  /// Register a new user (EMAIL: artist@test.com, PASSWORD: password123)
   Future<Map<String, dynamic>> register({
     required String email,
     required String password,
     required String name,
-    String role = 'USER',
+    String role = 'ARTIST',
   }) async {
     try {
       final response = await _apiClient.post<Map<String, dynamic>>(
         '/api/auth/register',
-        data: {
+        body: {
           'email': email,
           'password': password,
           'name': name,
@@ -56,7 +59,11 @@ class AuthService {
     }
   }
 
+  // ============ LOGIN/AUTHENTICATION ============
+
   /// Login user with email and password
+  /// POST /api/auth/login
+  /// Body: { "email": "artist@test.com", "password": "password123" }
   Future<Map<String, dynamic>> login({
     required String email,
     required String password,
@@ -64,7 +71,7 @@ class AuthService {
     try {
       final response = await _apiClient.post<Map<String, dynamic>>(
         '/api/auth/login',
-        data: {
+        body: {
           'email': email,
           'password': password,
         },
@@ -88,7 +95,7 @@ class AuthService {
     }
   }
 
-  /// Login dashboard (web interface)
+  /// Login to dashboard (web interface)
   Future<Map<String, dynamic>> loginDashboard({
     required String email,
     required String password,
@@ -96,7 +103,7 @@ class AuthService {
     try {
       final response = await _apiClient.post<Map<String, dynamic>>(
         '/api/auth/login-dashboard',
-        data: {
+        body: {
           'email': email,
           'password': password,
         },
@@ -120,10 +127,13 @@ class AuthService {
     }
   }
 
+  // ============ LOGOUT ============
+
   /// Logout and clear authentication
+  /// POST /api/auth/logout
   Future<void> logout() async {
     try {
-      await _apiClient.post('/api/auth/logout', data: {});
+      await _apiClient.post('/api/auth/logout', body: {});
     } catch (e) {
       developer.log('Logout error: $e', name: 'AuthService');
     } finally {
@@ -131,11 +141,23 @@ class AuthService {
     }
   }
 
+  // ============ TOKEN MANAGEMENT ============
+
   /// Check if user is authenticated
   bool isAuthenticated() => _apiClient.isAuthenticated();
 
   /// Get current auth token
   String? getToken() => _apiClient.getToken();
+
+  /// Set token manually
+  Future<void> setToken(String token) async {
+    await _apiClient.setToken(token);
+  }
+
+  /// Clear stored token
+  Future<void> clearToken() async {
+    await _apiClient.clearToken();
+  }
 
   /// Parse error message from exception
   String _parseError(dynamic error) {

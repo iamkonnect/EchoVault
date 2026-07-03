@@ -1,0 +1,25 @@
+# Docker ignore file for Flutter web frontend
+.dart_tool/
+build/
+.packages
+*.iml
+.gradle
+.idea/
+.vscode/
+.github/
+test/
+ios/
+android/
+linux/
+macos/
+windows/
+.env*
+.git/
+.gitignore
+README.md
+*.md
+.DS_Store
+Thumbs.db
+node_modules/
+.env.local
+.env.*.local

@@ -6,6 +6,7 @@ import 'dart:developer' as developer;
 
 /// Artist-specific API service for EchoVault
 /// Handles artist uploads, dashboard data, insights, and revenue
+/// Implements all artist endpoints from Postman collection
 class ArtistServiceV2 {
   final ApiClient _apiClient;
   late final CompatibilityService _compatService;
@@ -21,6 +22,8 @@ class ArtistServiceV2 {
   // ============ DASHBOARD ENDPOINTS ============
 
   /// Get artist dashboard data (overview, stats)
+  /// GET /api/artist/dashboard
+  /// Headers: Authorization: Bearer YOUR_JWT_TOKEN_HERE
   Future<Map<String, dynamic>> getDashboardData() async {
     try {
       final response = await _apiClient.get<Map<String, dynamic>>(
@@ -33,9 +36,11 @@ class ArtistServiceV2 {
     }
   }
 
-  // ============ MUSIC UPLOAD ENDPOINTS ============
+  // ============ MUSIC LIBRARY ENDPOINTS ============
 
   /// Get artist's uploaded music
+  /// GET /api/artist/music
+  /// Headers: Authorization: Bearer YOUR_JWT_TOKEN_HERE
   Future<Map<String, dynamic>> getArtistMusic() async {
     try {
       final response = await _apiClient.get<Map<String, dynamic>>(
@@ -48,7 +53,11 @@ class ArtistServiceV2 {
     }
   }
 
+  // ============ MUSIC UPLOAD ENDPOINTS ============
+
   /// Upload audio track with metadata
+  /// POST /api/tracks/upload
+  /// FormData with audioFile, title, quality, genre, description, coverArt
   Future<Map<String, dynamic>> uploadAudio({
     required String title,
     required String filePath,
@@ -87,6 +96,8 @@ class ArtistServiceV2 {
   }
 
   /// Upload video content
+  /// POST /api/artist/upload/video
+  /// FormData with videoFile, title, description, thumbnail
   Future<Map<String, dynamic>> uploadVideo({
     required String title,
     required String filePath,
@@ -121,6 +132,8 @@ class ArtistServiceV2 {
   }
 
   /// Upload shorts (short-form video)
+  /// POST /api/artist/upload/shorts
+  /// FormData with shortFile, title, description, thumbnail
   Future<Map<String, dynamic>> uploadShorts({
     required String title,
     required String filePath,
@@ -156,11 +169,13 @@ class ArtistServiceV2 {
 
   // ============ INSIGHTS ENDPOINTS ============
 
-  /// Get music insights and analytics
+  /// Get artist insights and analytics
+  /// GET /api/artist/insights
+  /// Headers: Authorization: Bearer YOUR_JWT_TOKEN_HERE
   Future<Map<String, dynamic>> getArtistInsights() async {
     try {
       final response = await _apiClient.get<Map<String, dynamic>>(
-        '/api/artist/live-insights',
+        '/api/artist/insights',
       );
       return response;
     } catch (e) {
@@ -169,7 +184,24 @@ class ArtistServiceV2 {
     }
   }
 
+  /// Get live music insights and real-time analytics
+  /// GET /api/artist/live-insights
+  /// Headers: Authorization: Bearer YOUR_JWT_TOKEN_HERE
+  Future<Map<String, dynamic>> getLiveInsights() async {
+    try {
+      final response = await _apiClient.get<Map<String, dynamic>>(
+        '/api/artist/live-insights',
+      );
+      return response;
+    } catch (e) {
+      developer.log('Failed to fetch live insights: $e', name: 'ArtistService');
+      return {'success': false, 'error': e.toString()};
+    }
+  }
+
   /// Get shorts-specific insights
+  /// GET /api/artist/shorts-insights
+  /// Headers: Authorization: Bearer YOUR_JWT_TOKEN_HERE
   Future<Map<String, dynamic>> getShortsInsights() async {
     try {
       final response = await _apiClient.get<Map<String, dynamic>>(
@@ -182,9 +214,11 @@ class ArtistServiceV2 {
     }
   }
 
-  // ============ REVENUE & PAYOUTS ENDPOINTS ============
+  // ============ REVENUE & EARNINGS ENDPOINTS ============
 
-  /// Get revenue data and statistics
+  /// Get revenue data and earnings breakdown
+  /// GET /api/artist/earnings
+  /// Headers: Authorization: Bearer YOUR_JWT_TOKEN_HERE
   Future<Map<String, dynamic>> getRevenueData() async {
     try {
       final response = await _apiClient.get<Map<String, dynamic>>(
@@ -197,7 +231,28 @@ class ArtistServiceV2 {
     }
   }
 
+  // ============ WITHDRAWAL ENDPOINTS ============
+
+  /// Get withdrawal history
+  /// GET /api/artist/withdrawals
+  /// Headers: Authorization: Bearer YOUR_JWT_TOKEN_HERE
+  Future<List<Map<String, dynamic>>> getPayoutHistory() async {
+    try {
+      final response = await _apiClient.get<Map<String, dynamic>>(
+        '/api/artist/withdrawals',
+      );
+      final payouts = response['payouts'] ?? response['items'] ?? response['withdrawals'] ?? [];
+      return List<Map<String, dynamic>>.from(payouts);
+    } catch (e) {
+      developer.log('Failed to fetch payout history: $e', name: 'ArtistService');
+      return [];
+    }
+  }
+
   /// Request fund withdrawal
+  /// POST /api/artist/withdraw
+  /// Body: { "amount": 50.00 }
+  /// Headers: Authorization: Bearer YOUR_JWT_TOKEN_HERE
   Future<Map<String, dynamic>> requestWithdrawal({
     required double amount,
     String? bankAccount,
@@ -224,7 +279,12 @@ class ArtistServiceV2 {
     }
   }
 
+  // ============ LIVE STREAM ENDPOINTS ============
+
   /// Start live stream
+  /// POST /api/artist/start-stream
+  /// Body: { "title": "stream title", "thumbnail": "..." }
+  /// Headers: Authorization: Bearer YOUR_JWT_TOKEN_HERE
   Future<Map<String, dynamic>> startLiveStream({
     required String title,
     String thumbnail = '',
@@ -245,6 +305,9 @@ class ArtistServiceV2 {
   }
 
   /// Stop live stream
+  /// POST /api/artist/stop-stream
+  /// Body: { "streamId": "..." }
+  /// Headers: Authorization: Bearer YOUR_JWT_TOKEN_HERE
   Future<Map<String, dynamic>> stopLiveStream(String streamId) async {
     try {
       final response = await _apiClient.post<Map<String, dynamic>>(
@@ -257,23 +320,12 @@ class ArtistServiceV2 {
     }
   }
 
-  /// Get artist's payout history
-  Future<List<Map<String, dynamic>>> getPayoutHistory() async {
-    try {
-      final response = await _apiClient.get<Map<String, dynamic>>(
-        '/api/artist/withdrawals',
-      );
-      final payouts = response['payouts'] ?? response['items'] ?? [];
-      return List<Map<String, dynamic>>.from(payouts);
-    } catch (e) {
-      developer.log('Failed to fetch payout history: $e', name: 'ArtistService');
-      return [];
-    }
-  }
-
   // ============ MUSIC MANAGEMENT ENDPOINTS ============
 
   /// Edit music metadata
+  /// PUT /api/artist/music/{musicId}
+  /// Body: { metadata fields to update }
+  /// Headers: Authorization: Bearer YOUR_JWT_TOKEN_HERE
   Future<bool> editMusic({
     required String musicId,
     required Map<String, dynamic> data,
@@ -291,6 +343,8 @@ class ArtistServiceV2 {
   }
 
   /// Delete music
+  /// DELETE /api/artist/music/{musicId}
+  /// Headers: Authorization: Bearer YOUR_JWT_TOKEN_HERE
   Future<bool> deleteMusic(String musicId) async {
     try {
       await _apiClient.delete(
@@ -304,6 +358,8 @@ class ArtistServiceV2 {
   }
 
   /// Get detailed music stats
+  /// GET /api/artist/music/{musicId}/stats
+  /// Headers: Authorization: Bearer YOUR_JWT_TOKEN_HERE
   Future<Map<String, dynamic>> getMusicStats(String musicId) async {
     try {
       final response = await _apiClient.get<Map<String, dynamic>>(

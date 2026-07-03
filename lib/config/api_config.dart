@@ -65,17 +65,40 @@ class ApiConfig {
     return user['subscriptionStatus'] != 'premium';
   }
 
-  // Endpoints
-  static String get adsEndpoint => '$baseUrl/api/ads/log-impression';
-  // Gifting endpoints — backend mounts at /api/gifting
+  // ============ AUTHENTICATION ENDPOINTS ============
+  static String get registerEndpoint => '$baseUrl/api/auth/register';
+  static String get loginEndpoint => '$baseUrl/api/auth/login';
+  static String get logoutEndpoint => '$baseUrl/api/auth/logout';
+  
+  // ============ ARTIST ENDPOINTS ============
+  static String get artistDashboardEndpoint => '$baseUrl/api/artist/dashboard';
+  static String get artistInsightsEndpoint => '$baseUrl/api/artist/insights';
+  static String get artistLiveInsightsEndpoint => '$baseUrl/api/artist/live-insights';
+  static String get artistMusicEndpoint => '$baseUrl/api/artist/music';
+  static String get artistShortsInsightsEndpoint => '$baseUrl/api/artist/shorts-insights';
+  static String get artistEarningsEndpoint => '$baseUrl/api/artist/earnings';
+  static String get artistWithdrawalsEndpoint => '$baseUrl/api/artist/withdrawals';
+  static String get artistWithdrawEndpoint => '$baseUrl/api/artist/withdraw';
+  static String get artistStartStreamEndpoint => '$baseUrl/api/artist/start-stream';
+  static String get artistStopStreamEndpoint => '$baseUrl/api/artist/stop-stream';
+  
+  // ============ TRACK ENDPOINTS ============
+  static String get tracksUploadEndpoint => '$baseUrl/api/tracks/upload';
+  
+  // ============ GIFTING ENDPOINTS ============
   static String get giftsEndpoint => '$baseUrl/api/gifting/send';
   static String get fetchGiftsEndpoint => '$baseUrl/api/gifting';
-  // Payment endpoints
+  
+  // ============ PAYMENT ENDPOINTS ============
   static String get fetchCoinPackagesEndpoint => '$baseUrl/api/payments/coin-packages';
   static String get initiatePaymentEndpoint => '$baseUrl/api/payments/initiate';
   static String get paymentWebhookEndpoint => '$baseUrl/api/payments/webhook';
-  // Live stream endpoints — backend mounts at /api/live
-  static String get streamJoinEndpoint => '$baseUrl/api/live/streams/join-request';
+  
+  // ============ LIVE STREAM ENDPOINTS ============
   static String get liveStreamEndpoint => '$baseUrl/api/artist/start-stream';
   static String get liveStreamStopEndpoint => '$baseUrl/api/artist/stop-stream';
+  static String get streamJoinEndpoint => '$baseUrl/api/live/streams/join-request';
+  
+  // ============ ADS ENDPOINTS ============
+  static String get adsEndpoint => '$baseUrl/api/ads/log-impression';
 }

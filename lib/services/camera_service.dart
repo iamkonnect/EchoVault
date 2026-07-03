@@ -132,7 +132,7 @@ class CameraService {
     // element absolutely on top of the widget using `IgnorePointer`.
 
     // Attach the host div to body once so the browser paints it.
-    if (_hostDiv != null && !_hostDiv!.isConnected) {
+    if (_hostDiv != null && _hostDiv!.isConnected == false) {
       _hostDiv!.style.position = 'absolute';
       _hostDiv!.style.left = '0';
       _hostDiv!.style.top = '0';

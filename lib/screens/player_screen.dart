@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:audio_service/audio_service.dart';
-import '../services/queue_service.dart';
+import '../services/queue_service.dart' as queue_service;
 import '../services/audio_player_service.dart';
 import '../services/image_utils.dart';
 
@@ -11,7 +11,7 @@ class PlayerScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final audioHandler = ref.watch(audioHandlerProvider);
-    final queue = ref.watch(queueServiceProvider);
+    final queue = ref.watch(queue_service.queueServiceProvider);
     final currentTrack = queue.currentTrack;
 
     if (currentTrack == null) {
@@ -189,7 +189,7 @@ class PlayerScreen extends ConsumerWidget {
             children: [
               IconButton(
                 onPressed: () =>
-                    ref.read(queueServiceProvider.notifier).toggleShuffle(),
+                    ref.read(queue_service.queueServiceProvider.notifier).toggleShuffle(),
                 icon: Icon(
                   Icons.shuffle,
                   color: queue.shuffleActive ? Colors.white : Colors.white60,
@@ -197,7 +197,7 @@ class PlayerScreen extends ConsumerWidget {
               ),
               IconButton(
                 onPressed: () =>
-                    ref.read(queueServiceProvider.notifier).cycleRepeat(),
+                    ref.read(queue_service.queueServiceProvider.notifier).cycleRepeat(),
                 icon: Icon(
                   _getRepeatIcon(queue.repeatMode),
                   color: Colors.white60,
@@ -218,14 +218,16 @@ class PlayerScreen extends ConsumerWidget {
     );
   }
 
-  IconData _getRepeatIcon(RepeatMode mode) {
+  IconData _getRepeatIcon(queue_service.RepeatMode mode) {
     switch (mode) {
-      case RepeatMode.off:
+      case queue_service.RepeatMode.off:
         return Icons.repeat;
-      case RepeatMode.one:
+      case queue_service.RepeatMode.one:
         return Icons.repeat_one;
-      case RepeatMode.all:
+      case queue_service.RepeatMode.all:
         return Icons.repeat_on;
+      default:
+        return Icons.repeat;
     }
   }
 
