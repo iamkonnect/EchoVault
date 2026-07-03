@@ -19,31 +19,68 @@
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="EchoVault - The Ultimate Sound Experience.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   
   <!-- Permissions Policy: Allow camera and microphone for live streaming -->
   <meta http-equiv="Permissions-Policy" content="camera=(self), microphone=(self)">
 
-  <!-- iOS meta tags & icons -->
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#000000">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="echovault">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="EchoVault">
+  
+  <!-- iOS meta tags & icons -->
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-startup-image" href="icons/Icon-192.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="shortcut icon" type="image/png" href="favicon.png">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
 
   <title>EchoVault</title>
-  <link rel="manifest" href="manifest.json">
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
   
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('service_worker.js').then(function(registration) {
+          console.log('Service Worker registered:', registration);
+        }).catch(function(error) {
+          console.log('Service Worker registration failed:', error);
+        });
+      });
+    }
+
+    // Handle updates to service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('controllerchange', function() {
+        console.log('Service Worker controller changed - app updated');
+        // Optionally show update notification
+        window.location.reload();
+      });
+    }
+  </script>
+
   <!-- Camera and Microphone Permission Script -->
   <script>
-    // Ensure camera/microphone permissions are properly handled
-    // This script runs before Flutter initializes
     window.addEventListener('load', function() {
       console.log('EchoVault loaded - ready for camera/microphone access');
+      
+      // Check if app can be installed
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        console.log('Install prompt available');
+      });
     });
   </script>
 </body>
