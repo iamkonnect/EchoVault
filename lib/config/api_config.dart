@@ -12,14 +12,13 @@ class ApiConfig {
         return 'http://localhost:5000';
       }
       
-      // Production: Azure Container Instances
-      // Point directly to backend Azure Container Instance
-      if (windowLocation.contains('azurecontainers.io')) {
-        return 'http://echovault-backend.eastus.azurecontainer.io:5000';
+      // Production: EchoVault VPS with Traefik
+      if (windowLocation.contains('echovaultz.com')) {
+        return 'https://admin.echovaultz.com';
       }
       
       // Fallback for other deployments
-      return 'http://echovault-backend.eastus.azurecontainer.io:5000';
+      return 'https://admin.echovaultz.com';
     }
     
     // Mobile: Android emulator
@@ -34,12 +33,12 @@ class ApiConfig {
         return 'http://localhost:5000';
       }
       
-      // Azure: connect directly to backend for WebSocket
-      if (windowLocation.contains('azurecontainers.io')) {
-        return 'http://echovault-backend.eastus.azurecontainer.io:5000';
+      // Production: EchoVault VPS with Traefik
+      if (windowLocation.contains('echovaultz.com')) {
+        return 'https://admin.echovaultz.com';
       }
       
-      return 'http://echovault-backend.eastus.azurecontainer.io:5000';
+      return 'https://admin.echovaultz.com';
     }
     
     return 'http://10.0.2.2:5000';
