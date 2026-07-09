@@ -342,7 +342,7 @@ class _AuthModalState extends ConsumerState<AuthModal> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                             content: Text(
-                                'Invalid credentials or weak password. Try akwera@gmail.com / 1234Abc!')),
+                                'Invalid credentials. Please check your email and password.')),
                       );
                     }
                   }

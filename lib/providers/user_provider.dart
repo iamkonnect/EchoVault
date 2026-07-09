@@ -3,13 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 import '../models/gift.dart';
+import '../services/auth_service_v2.dart';
+import '../services/api_client.dart';
 
 class UserNotifier extends StateNotifier<User?> {
-  UserNotifier() : super(null) {
+  final AuthService authService;
+  
+  UserNotifier(this.authService) : super(null) {
     _loadUser();
   }
 
   static const String _userKey = 'user_data';
+  static const String _tokenKey = 'auth_token';
   static const String _twoFactorKey = 'is2FAEnabled';
   static const double _platformCommission = 0.30; // 30% Platform cut
 
@@ -25,8 +30,6 @@ class UserNotifier extends StateNotifier<User?> {
 
     try {
       final Map<String, dynamic> userMap = jsonDecode(userData);
-      // Since the User model doesn't have a fromJson yet, 
-      // we reconstruct the session user with default/saved values
       state = User(
         id: userMap['id'] ?? '',
         name: userMap['name'] ?? 'User',
@@ -96,102 +99,122 @@ class UserNotifier extends StateNotifier<User?> {
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_userKey);
+    await prefs.remove(_tokenKey);
+    await authService.logout();
     state = null;
   }
 
   Future<void> deactivate() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear(); // Clear all app data
+    await authService.logout();
     state = null;
-    // TODO: Call API to deactivate account if backend exists
   }
 
-  Future<bool> signIn(String identifier, String password) async {
-    // Dummy auth - simulate network
-    await Future.delayed(const Duration(milliseconds: 1500));
-    
-    if ((identifier == 'akwera@gmail.com' || identifier == '@akwera') && password == '1234Abc!') {
-      state = User(
-        id: 'demo_user_1',
-        name: 'Akwera Jr',
-        username: identifier.startsWith('@') ? identifier : '@akwera',
-        email: identifier.contains('@') && !identifier.startsWith('@') ? identifier : 'akwera@gmail.com',
-        avatarUrl: 'https://ui-avatars.com/api/?name=Akwera+Jr&background=0D8ABC&color=fff',
-        bio: 'Music enthusiast exploring Echo Realms 🌌',
-        is2FAEnabled: false,
-        subscriptionStatus: SubscriptionStatus.free,
-        totalPlays: 12456,
-        favoriteGenres: const ['Afro Jazz', 'Amapiano', 'Hip Hop'],
-        playlistCount: 12,
-        topTracks: const [
-          'Bwana Atawapigania',
-          'Halleluyah',
-          'Echo Afro Jazz Sunset',
-          'Echo Amapiano Nights',
-          'Echo Bongo Flavour Mix',
-        ],
-        role: UserRole.artist,
-        balance: 1250.50,
-        earnings: [
-          UserEarning(type: 'song_plays', amount: 245.00, date: DateTime.now().subtract(const Duration(days: 1))),
-          UserEarning(type: 'gifts', amount: 50.00, date: DateTime.now().subtract(const Duration(days: 2))),
-          UserEarning(type: 'live_stream', amount: 100.00, date: DateTime.now().subtract(const Duration(days: 3))),
-          UserEarning(type: 'shorts_views', amount: 20.00, date: DateTime.now().subtract(const Duration(days: 4))),
-          UserEarning(type: 'song_plays', amount: 180.50, date: DateTime.now().subtract(const Duration(days: 5))),
-          UserEarning(type: 'gifts', amount: 75.00, date: DateTime.now().subtract(const Duration(days: 7))),
-          UserEarning(type: 'live_stream', amount: 150.00, date: DateTime.now().subtract(const Duration(days: 10))),
-          UserEarning(type: 'shorts_views', amount: 30.00, date: DateTime.now().subtract(const Duration(days: 12))),
-        ],
-      );
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_userKey, jsonEncode({
-        'id': state!.id,
-        'email': state!.email,
-        'loggedIn': true,
-      }));
-      return true;
+  /// Sign in with backend API
+  Future<bool> signIn(String email, String password) async {
+    try {
+      final result = await authService.login(email: email, password: password);
+      
+      if (result['success'] == true && result['user'] != null) {
+        final user = result['user'];
+        final token = result['token'];
+        
+        // Store token securely
+        final prefs = await SharedPreferences.getInstance();
+        if (token != null) {
+          await prefs.setString(_tokenKey, token);
+        }
+        
+        // Store minimal user data locally
+        await prefs.setString(_userKey, jsonEncode({
+          'id': user['id'] ?? '',
+          'name': user['name'] ?? '',
+          'username': user['username'] ?? '',
+          'email': user['email'] ?? email,
+          'role': user['role'] ?? 'user',
+          'avatarUrl': user['avatarUrl'],
+          'balance': (user['balance'] ?? 0.0).toDouble(),
+        }));
+        
+        // Update state
+        state = User(
+          id: user['id'] ?? '',
+          name: user['name'] ?? 'User',
+          username: user['username'] ?? '',
+          email: user['email'] ?? email,
+          avatarUrl: user['avatarUrl'],
+          role: (user['role'] ?? 'user').toString().toLowerCase().contains('artist') 
+              ? UserRole.artist 
+              : UserRole.user,
+          balance: (user['balance'] ?? 0.0).toDouble(),
+        );
+        
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
     }
-    return false;
   }
 
+  /// Sign up with backend API
   Future<bool> signUp(String name, String username, String email, String password) async {
-    // Dummy signup
-    await Future.delayed(const Duration(milliseconds: 1500));
-    
-    // Basic validation
-    if (password.length < 6) return false;
-    
-    state = User(
-      id: 'user_${DateTime.now().millisecondsSinceEpoch}',
-      name: name,
-      username: username.startsWith('@') ? username : '@$username',
-      email: email,
-      avatarUrl: 'https://ui-avatars.com/api/?name=${name.replaceAll(' ', '+')}&background=0D8ABC&color=fff',
-      bio: 'New to EchoVault',
-      is2FAEnabled: false,
-      subscriptionStatus: SubscriptionStatus.free,
-      totalPlays: 0,
-      favoriteGenres: const [],
-      playlistCount: 0,
-      topTracks: const [],
-      role: UserRole.user,
-      balance: 0.0,
-      earnings: const [],
-    );
-    
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_userKey, jsonEncode({
-      'id': state!.id,
-      'name': state!.name,
-      'email': state!.email,
-      'loggedIn': true,
-    }));
-    return true;
+    try {
+      final result = await authService.register(
+        email: email,
+        password: password,
+        name: name,
+        role: 'ARTIST', // Default role
+      );
+      
+      if (result['success'] == true && result['user'] != null) {
+        final user = result['user'];
+        final token = result['token'];
+        
+        // Store token securely
+        final prefs = await SharedPreferences.getInstance();
+        if (token != null) {
+          await prefs.setString(_tokenKey, token);
+        }
+        
+        // Store minimal user data locally
+        await prefs.setString(_userKey, jsonEncode({
+          'id': user['id'] ?? '',
+          'name': user['name'] ?? name,
+          'username': user['username'] ?? username,
+          'email': user['email'] ?? email,
+          'role': user['role'] ?? 'ARTIST',
+          'balance': 0.0,
+        }));
+        
+        // Update state
+        state = User(
+          id: user['id'] ?? '',
+          name: user['name'] ?? name,
+          username: user['username'] ?? username,
+          email: user['email'] ?? email,
+          role: UserRole.artist,
+          balance: 0.0,
+        );
+        
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
+    }
   }
 }
 
-final userProvider =
-    StateNotifierProvider<UserNotifier, User?>((ref) => UserNotifier());
+final authServiceProvider = Provider<AuthService>((ref) {
+  return AuthService(apiClient: ApiClient());
+});
+
+final userProvider = StateNotifierProvider<UserNotifier, User?>((ref) {
+  final authService = ref.watch(authServiceProvider);
+  return UserNotifier(authService);
+});
 
 // Helper to get user or loading/error
 final userAsyncProvider = FutureProvider<User>((ref) async {
