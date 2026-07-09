@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/gift.dart';
 import '../providers/app_providers.dart';
+import '../providers/user_provider.dart';
 
 class GiftPickerGrid extends ConsumerStatefulWidget {
   final String streamId;
