@@ -5,6 +5,8 @@ import '../models/user.dart';
 import '../models/gift.dart';
 import '../services/auth_service_v2.dart';
 import '../services/api_client.dart';
+import '../l10n/gift_service.dart';
+import 'app_providers.dart';
 
 class UserNotifier extends StateNotifier<User?> {
   final AuthService authService;
@@ -207,13 +209,16 @@ class UserNotifier extends StateNotifier<User?> {
   }
 }
 
-final authServiceProvider = Provider<AuthService>((ref) {
-  return AuthService(apiClient: ApiClient());
-});
-
+// Use authServiceProvider from app_providers.dart
 final userProvider = StateNotifierProvider<UserNotifier, User?>((ref) {
   final authService = ref.watch(authServiceProvider);
   return UserNotifier(authService);
+});
+
+// Gift service provider
+final giftServiceProvider = Provider<GiftService>((ref) {
+  final apiClient = ref.watch(apiClientProvider);
+  return GiftService(apiClient: apiClient);
 });
 
 // Helper to get user or loading/error
