@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'dart:developer' as developer;
-import 'dart:async';
+import '../config/api_config.dart';
 
 class ArtistService {
   final Dio _dio;
@@ -8,12 +8,15 @@ class ArtistService {
 
   ArtistService({
     required Dio dio,
-    this.baseUrl = 'http://localhost:5000',
-  }) : _dio = dio;
+    this.baseUrl = '',
+  }) : _dio = dio {
+    // Use ApiConfig.baseUrl if baseUrl is empty
+    _dio.options.baseUrl = baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl;
+  }
 
   Future<Map<String, dynamic>> getArtistInsights() async {
     try {
-      final response = await _dio.get('$baseUrl/api/artist/insights');
+      final response = await _dio.get('${baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl}/api/artist/insights');
       return {
         'success': true,
         'data': response.data,
@@ -42,7 +45,7 @@ class ArtistService {
       });
 
       final response = await _dio.post(
-        '$baseUrl/api/artist/upload',
+        '${baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl}/api/artist/upload',
         data: formData,
       );
 
@@ -61,7 +64,7 @@ class ArtistService {
 
   Future<Map<String, dynamic>> getArtistMusic() async {
     try {
-      final response = await _dio.get('$baseUrl/api/artist/music');
+      final response = await _dio.get('${baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl}/api/artist/music');
       return {
         'success': true,
         'data': response.data,
@@ -80,7 +83,7 @@ class ArtistService {
   }) async {
     try {
       final response = await _dio.post(
-        '$baseUrl/api/artist/withdraw',
+        '${baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl}/api/artist/withdraw',
         data: {
           'amount': amount,
         },

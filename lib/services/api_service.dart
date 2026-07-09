@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'dart:developer' as developer;
-import 'dart:async';
+import '../config/api_config.dart';
 
 class EchoVaultApiService {
   final Dio _dio;
@@ -8,14 +8,18 @@ class EchoVaultApiService {
 
   EchoVaultApiService({
     required Dio dio,
-    this.baseUrl = 'http://localhost:5000',
-  }) : _dio = dio;
+    this.baseUrl = '',
+  }) : _dio = dio {
+    // Use ApiConfig.baseUrl if baseUrl is empty
+    _dio.options.baseUrl = baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl;
+  }
 
   // Search tracks from external API or internal DB
   Future<List<Map<String, dynamic>>> searchTracks(String query) async {
     try {
+      final url = baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl;
       final response = await _dio.get(
-        '$baseUrl/api/tracks/search',
+        '$url/api/tracks/search',
         queryParameters: {'q': query},
       );
 
@@ -31,7 +35,8 @@ class EchoVaultApiService {
   // Get home recommendations
   Future<List<Map<String, dynamic>>> getHomeRecommendations() async {
     try {
-      final response = await _dio.get('$baseUrl/api/tracks/recommendations');
+      final url = baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl;
+      final response = await _dio.get('$url/api/tracks/recommendations');
       return List<Map<String, dynamic>>.from(response.data['recommended'] ?? response.data ?? []);
     } catch (e) {
       developer.log('Home recommendations fetch failed: $e', name: 'ApiService');
@@ -43,8 +48,9 @@ class EchoVaultApiService {
   Future<Map<String, dynamic>> getTrack(String id,
       {String quality = 'HI_RES_LOSSLESS'}) async {
     try {
+      final url = baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl;
       final response = await _dio.get(
-        '$baseUrl/api/tracks/$id',
+        '$url/api/tracks/$id',
         queryParameters: {'quality': quality},
       );
       return response.data;
@@ -69,7 +75,8 @@ class EchoVaultApiService {
   // Get album by ID
   Future<Map<String, dynamic>> getAlbum(String id) async {
     try {
-      final response = await _dio.get('$baseUrl/api/albums/$id');
+      final url = baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl;
+      final response = await _dio.get('$url/api/albums/$id');
       return response.data;
     } catch (e) {
       developer.log('Album fetch failed: $e', name: 'ApiService');
@@ -80,7 +87,8 @@ class EchoVaultApiService {
   // Get artist by ID
   Future<Map<String, dynamic>> getArtist(String id) async {
     try {
-      final response = await _dio.get('$baseUrl/api/artists/$id');
+      final url = baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl;
+      final response = await _dio.get('$url/api/artists/$id');
       return response.data;
     } catch (e) {
       developer.log('Artist fetch failed: $e', name: 'ApiService');
@@ -91,8 +99,9 @@ class EchoVaultApiService {
   // Get tracks by genre
   Future<List<Map<String, dynamic>>> getTracksByGenre(String genre) async {
     try {
+      final url = baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl;
       final response = await _dio.get(
-        '$baseUrl/api/tracks/genre/$genre',
+        '$url/api/tracks/genre/$genre',
       );
       final items = response.data['items'] ?? response.data['tracks'] ?? [];
       return List<Map<String, dynamic>>.from(items);
@@ -105,7 +114,8 @@ class EchoVaultApiService {
   // Get trending tracks
   Future<List<Map<String, dynamic>>> getTrendingTracks() async {
     try {
-      final response = await _dio.get('$baseUrl/api/tracks/trending');
+      final url = baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl;
+      final response = await _dio.get('$url/api/tracks/trending');
       return List<Map<String, dynamic>>.from(response.data['tracks'] ?? response.data ?? []);
     } catch (e) {
       developer.log('Trending tracks fetch failed: $e', name: 'ApiService');
@@ -116,7 +126,8 @@ class EchoVaultApiService {
   // Get user playlist
   Future<List<Map<String, dynamic>>> getUserPlaylist(String playlistId) async {
     try {
-      final response = await _dio.get('$baseUrl/api/playlists/$playlistId');
+      final url = baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl;
+      final response = await _dio.get('$url/api/playlists/$playlistId');
       return List<Map<String, dynamic>>.from(response.data['tracks'] ?? response.data['items'] ?? []);
     } catch (e) {
       developer.log('Playlist fetch failed: $e', name: 'ApiService');

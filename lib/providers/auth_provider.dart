@@ -1,31 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
-import '../services/auth_service.dart';
-import '../services/api_service.dart';
-import '../services/artist_service.dart';
+import '../services/auth_service_v2.dart';
+import '../services/api_client.dart';
 import '../config/api_config.dart';
 
-// Auth Service Provider
+// Auth Service Provider - uses dynamic ApiConfig.baseUrl
 final authServiceProvider = Provider<AuthService>((ref) {
-  return AuthService(baseUrl: ApiConfig.baseUrl.isEmpty ? 'http://localhost:5000' : ApiConfig.baseUrl);
+  return AuthService(apiClient: ApiClient());
 });
 
-// Authenticated Dio Provider
-final dioProvider = Provider<Dio>((ref) {
-  final authService = ref.watch(authServiceProvider);
-  return authService.getDio();
-});
-
-// API Service Provider
-final apiServiceProvider = Provider<EchoVaultApiService>((ref) {
-  final dio = ref.watch(dioProvider);
-  return EchoVaultApiService(dio: dio, baseUrl: ApiConfig.baseUrl.isEmpty ? 'http://localhost:5000' : ApiConfig.baseUrl);
-});
-
-// Artist Service Provider
-final artistServiceProvider = Provider<ArtistService>((ref) {
-  final dio = ref.watch(dioProvider);
-  return ArtistService(dio: dio, baseUrl: ApiConfig.baseUrl.isEmpty ? 'http://localhost:5000' : ApiConfig.baseUrl);
+// API Client Provider - uses dynamic ApiConfig.baseUrl
+final apiClientProvider = Provider<ApiClient>((ref) {
+  return ApiClient();
 });
 
 // Auth State Provider
@@ -106,7 +92,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     String email,
     String password,
     String name, {
-    String role = 'USER',
+    String role = 'ARTIST',
   }) async {
     state = state.copyWith(isLoading: true, error: null);
 

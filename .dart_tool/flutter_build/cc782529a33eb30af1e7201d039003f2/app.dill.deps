@@ -1037,12 +1037,9 @@ file:///C:/Users/infin/Downloads/echovault_working/lib/screens/shorts_screen.dar
 file:///C:/Users/infin/Downloads/echovault_working/lib/screens/trending_all_screen.dart
 file:///C:/Users/infin/Downloads/echovault_working/lib/screens/wallet_screen.dart
 file:///C:/Users/infin/Downloads/echovault_working/lib/services/api_client.dart
-file:///C:/Users/infin/Downloads/echovault_working/lib/services/api_service.dart
 file:///C:/Users/infin/Downloads/echovault_working/lib/services/api_service_v2.dart
-file:///C:/Users/infin/Downloads/echovault_working/lib/services/artist_service.dart
 file:///C:/Users/infin/Downloads/echovault_working/lib/services/artist_service_v2.dart
 file:///C:/Users/infin/Downloads/echovault_working/lib/services/audio_player_service.dart
-file:///C:/Users/infin/Downloads/echovault_working/lib/services/auth_service.dart
 file:///C:/Users/infin/Downloads/echovault_working/lib/services/auth_service_v2.dart
 file:///C:/Users/infin/Downloads/echovault_working/lib/services/cache_service.dart
 file:///C:/Users/infin/Downloads/echovault_working/lib/services/camera_service.dart
