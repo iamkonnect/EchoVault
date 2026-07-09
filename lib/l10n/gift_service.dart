@@ -16,20 +16,35 @@ class GiftService {
     }
   }
 
+  /// Retrieves all available gifts from the backend.
+  Future<List<dynamic>> getAvailableGifts() async {
+    try {
+      final response = await apiClient.get('/api/gifting');
+      return response['data'] ?? [];
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// Sends a gift to a creator.
-  /// [entityId] is the ID of the Song, Short, or Live Session.
-  /// [entityType] should be 'SONG', 'SHORT', or 'LIVE'.
+  /// [receiverId] is the ID of the user receiving the gift.
+  /// [amount] is the monetary value of the gift.
+  /// [giftId] is the ID of the gift template.
+  /// [streamId] (optional) is the ID of the live stream.
   Future<Map<String, dynamic>> sendGift({
-    required String entityId,
-    required String entityType,
+    required String receiverId,
+    required double amount,
     required String giftId,
+    int quantity = 1,
+    String? streamId,
   }) async {
     try {
       return await apiClient.post('/api/gifting/send', body: {
-        'entityId': entityId,
-        'entityType': entityType,
+        'receiverId': receiverId,
+        'amount': amount,
         'giftId': giftId,
-        'timestamp': DateTime.now().toIso8601String(),
+        'quantity': quantity,
+        'streamId': streamId,
       });
     } catch (e) {
       rethrow;
