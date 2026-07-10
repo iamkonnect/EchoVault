@@ -7,17 +7,17 @@ class ApiConfig {
     if (kIsWeb) {
       final windowLocation = Uri.base.toString();
       
-      // Development: localhost
+      // Development: localhost HTTP
       if (windowLocation.contains('localhost') || windowLocation.contains('127.0.0.1')) {
         return 'http://localhost:5000';
       }
       
-      // Production: EchoVault VPS with Traefik
+      // Production: Use HTTPS for Traefik/admin.echovaultz.com
       if (windowLocation.contains('echovaultz.com')) {
         return 'https://admin.echovaultz.com';
       }
       
-      // Fallback for other deployments
+      // Fallback to production HTTPS
       return 'https://admin.echovaultz.com';
     }
     
@@ -33,7 +33,7 @@ class ApiConfig {
         return 'http://localhost:5000';
       }
       
-      // Production: EchoVault VPS with Traefik
+      // Production: Use HTTPS for Traefik
       if (windowLocation.contains('echovaultz.com')) {
         return 'https://admin.echovaultz.com';
       }
