@@ -177,4 +177,94 @@ class AuthService {
   void clearAuthToken() {
     _dio.options.headers.remove('Authorization');
   }
+
+  /// Forgot password - request reset email
+  Future<Map<String, dynamic>> forgotPassword(String email) async {
+    try {
+      final response = await _dio.post(
+        '/api/auth/forgot-password',
+        data: {'email': email},
+      );
+      return {
+        'success': response.data['success'] ?? false,
+        'message': response.data['message'] ??
+            'If your email exists, a reset link has been sent.',
+      };
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': e.response?.data['message'] ?? 'Failed to send reset email',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred',
+        'error': e.toString(),
+      };
+    }
+  }
+
+  /// Resend verification email
+  Future<Map<String, dynamic>> resendVerification(String token) async {
+    try {
+      final response = await _dio.post(
+        '/api/auth/send-verification',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+      return {
+        'success': response.data['success'] ?? false,
+        'message': response.data['message'] ?? 'Verification email sent',
+      };
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message':
+            e.response?.data['message'] ?? 'Failed to send verification email',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred',
+        'error': e.toString(),
+      };
+    }
+  }
+
+  /// Upgrade user role to ARTIST
+  Future<Map<String, dynamic>> upgradeToArtist(String token) async {
+    try {
+      final response = await _dio.post(
+        '/api/auth/upgrade-artist',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+      return {
+        'success': response.data['success'] ?? false,
+        'user': response.data['user'],
+        'message': response.data['message'],
+      };
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': e.response?.data['message'] ?? 'Failed to upgrade to artist',
+        'error': e.message,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred',
+        'error': e.toString(),
+      };
+    }
+  }
+
+  /// Get auth token from the current session
+  String? getToken() {
+    return _dio.options.headers['Authorization']
+        ?.toString()
+        .replaceFirst('Bearer ', '');
+  }
 }
