@@ -1,172 +1,180 @@
 import 'package:dio/dio.dart';
+import '../config/api_config.dart';
 import 'dart:developer' as developer;
-import 'api_client.dart';
 
-/// Comprehensive authentication service for EchoVault
-/// Supports user and artist authentication with token management
-/// Implements all authentication endpoints from Postman collection
 class AuthService {
-  final ApiClient _apiClient;
-  final String baseUrl;
+  final Dio _dio;
+  static const String _tag = 'AuthService';
 
-  AuthService({
-    required ApiClient apiClient,
-    this.baseUrl = '',
-  })
-      : _apiClient = apiClient {
-    _initialize();
+  AuthService({Dio? dio}) : _dio = dio ?? _setupDio();
+
+  static Dio _setupDio() {
+    return Dio(
+      BaseOptions(
+        baseUrl: ApiConfig.baseUrl,
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      ),
+    );
   }
 
-  Future<void> _initialize() async {
-    await _apiClient.initializeToken();
-  }
-
-  // ============ USER REGISTRATION ============
-
-  /// Register a new user (EMAIL: artist@test.com, PASSWORD: password123)
+  /// Register new user
   Future<Map<String, dynamic>> register({
     required String email,
     required String password,
     required String name,
-    String role = 'ARTIST',
   }) async {
     try {
-      final response = await _apiClient.post<Map<String, dynamic>>(
+      final response = await _dio.post(
         '/api/auth/register',
-        body: {
+        data: {
           'email': email,
           'password': password,
           'name': name,
-          'role': role,
         },
       );
 
-      if (response['token'] != null) {
-        await _apiClient.setToken(response['token']);
-      }
+      developer.log('Register success: ${response.statusCode}', name: _tag);
 
       return {
-        'success': true,
-        'token': response['token'],
-        'user': response['user'],
+        'success': response.data['success'] ?? false,
+        'token': response.data['token'],
+        'user': response.data['user'],
+        'message': response.data['message'],
       };
-    } catch (e) {
-      developer.log('Register failed: $e', name: 'AuthService');
+    } on DioException catch (e) {
+      developer.log('Register error: ${e.message}', name: _tag);
       return {
         'success': false,
-        'error': _parseError(e),
+        'message': e.response?.data['message'] ?? 'Registration failed',
+        'error': e.message,
+      };
+    } catch (e) {
+      developer.log('Register catch error: $e', name: _tag);
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred',
+        'error': e.toString(),
       };
     }
   }
 
-  // ============ LOGIN/AUTHENTICATION ============
-
-  /// Login user with email and password
-  /// POST /api/auth/login
-  /// Body: { "email": "artist@test.com", "password": "password123" }
+  /// Login user
   Future<Map<String, dynamic>> login({
     required String email,
     required String password,
   }) async {
     try {
-      final response = await _apiClient.post<Map<String, dynamic>>(
+      final response = await _dio.post(
         '/api/auth/login',
-        body: {
+        data: {
           'email': email,
           'password': password,
         },
       );
 
-      if (response['token'] != null) {
-        await _apiClient.setToken(response['token']);
-      }
+      developer.log('Login success: ${response.statusCode}', name: _tag);
 
       return {
-        'success': true,
-        'token': response['token'],
-        'user': response['user'],
+        'success': response.data['success'] ?? false,
+        'token': response.data['token'],
+        'user': response.data['user'],
+        'message': response.data['message'],
       };
-    } catch (e) {
-      developer.log('Login failed: $e', name: 'AuthService');
+    } on DioException catch (e) {
+      developer.log('Login error: ${e.message}', name: _tag);
       return {
         'success': false,
-        'error': _parseError(e),
+        'message': e.response?.data['message'] ?? 'Login failed',
+        'error': e.message,
+      };
+    } catch (e) {
+      developer.log('Login catch error: $e', name: _tag);
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred',
+        'error': e.toString(),
       };
     }
   }
 
-  /// Login to dashboard (web interface)
-  Future<Map<String, dynamic>> loginDashboard({
-    required String email,
-    required String password,
-  }) async {
+  /// Logout
+  Future<bool> logout(String token) async {
     try {
-      final response = await _apiClient.post<Map<String, dynamic>>(
-        '/api/auth/login-dashboard',
-        body: {
-          'email': email,
-          'password': password,
-        },
+      await _dio.post(
+        '/api/auth/logout',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+      developer.log('Logout success', name: _tag);
+      return true;
+    } catch (e) {
+      developer.log('Logout error: $e', name: _tag);
+      return false;
+    }
+  }
+
+  /// Refresh token
+  Future<Map<String, dynamic>> refreshToken(String token) async {
+    try {
+      final response = await _dio.post(
+        '/api/auth/refresh',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
       );
 
-      if (response['token'] != null) {
-        await _apiClient.setToken(response['token']);
-      }
+      developer.log('Token refresh success', name: _tag);
 
       return {
-        'success': true,
-        'token': response['token'],
-        'user': response['user'],
+        'success': response.data['success'] ?? false,
+        'token': response.data['token'],
+        'message': response.data['message'],
       };
     } catch (e) {
-      developer.log('Dashboard login failed: $e', name: 'AuthService');
+      developer.log('Token refresh error: $e', name: _tag);
       return {
         'success': false,
-        'error': _parseError(e),
+        'message': 'Token refresh failed',
+        'error': e.toString(),
       };
     }
   }
 
-  // ============ LOGOUT ============
-
-  /// Logout and clear authentication
-  /// POST /api/auth/logout
-  Future<void> logout() async {
+  /// Verify auth
+  Future<Map<String, dynamic>> verifyAuth(String token) async {
     try {
-      await _apiClient.post('/api/auth/logout', body: {});
+      final response = await _dio.post(
+        '/api/auth/verify',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+
+      return {
+        'success': response.data['success'] ?? false,
+        'user': response.data['user'],
+      };
     } catch (e) {
-      developer.log('Logout error: $e', name: 'AuthService');
-    } finally {
-      await _apiClient.clearToken();
+      developer.log('Verify auth error: $e', name: _tag);
+      return {
+        'success': false,
+        'error': e.toString(),
+      };
     }
   }
 
-  // ============ TOKEN MANAGEMENT ============
-
-  /// Check if user is authenticated
-  bool isAuthenticated() => _apiClient.isAuthenticated();
-
-  /// Get current auth token
-  String? getToken() => _apiClient.getToken();
-
-  /// Set token manually
-  Future<void> setToken(String token) async {
-    await _apiClient.setToken(token);
+  /// Set auth token for all requests
+  void setAuthToken(String token) {
+    _dio.options.headers['Authorization'] = 'Bearer $token';
   }
 
-  /// Clear stored token
-  Future<void> clearToken() async {
-    await _apiClient.clearToken();
-  }
-
-  /// Parse error message from exception
-  String _parseError(dynamic error) {
-    if (error is DioException) {
-      if (error.response?.data is Map) {
-        return error.response?.data['message'] ?? 'Authentication failed';
-      }
-      return error.message ?? 'Authentication failed';
-    }
-    return error.toString();
+  /// Clear auth token
+  void clearAuthToken() {
+    _dio.options.headers.remove('Authorization');
   }
 }
