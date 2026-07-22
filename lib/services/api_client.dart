@@ -51,17 +51,19 @@ class ApiClient {
     try {
       final mappedEndpoint = EndpointMapper.mapEndpoint(endpoint);
       final url = baseUrl.isEmpty
-          ? Uri.parse('${Uri.base.origin}/api$mappedEndpoint')
-          : Uri.parse('$baseUrl/api$mappedEndpoint');
+          ? Uri.parse('${Uri.base.origin}$mappedEndpoint')
+          : Uri.parse('$baseUrl$mappedEndpoint');
 
       if (ApiConfig.enableDebugLogging) {
         developer.log('GET $url', name: _tag);
       }
 
-      final response = await http.get(
-        url,
-        headers: await _getHeaders(),
-      ).timeout(const Duration(seconds: ApiConfig.requestTimeout));
+      final response = await http
+          .get(
+            url,
+            headers: await _getHeaders(),
+          )
+          .timeout(const Duration(seconds: ApiConfig.requestTimeout));
 
       return _handleResponse(response);
     } catch (e) {
@@ -73,23 +75,26 @@ class ApiClient {
   }
 
   /// POST request with automatic endpoint mapping
-  Future<T> post<T>(String endpoint, {Map<String, dynamic>? body, Map<String, dynamic>? data}) async {
+  Future<T> post<T>(String endpoint,
+      {Map<String, dynamic>? body, Map<String, dynamic>? data}) async {
     try {
       final mappedEndpoint = EndpointMapper.mapEndpoint(endpoint);
       final url = baseUrl.isEmpty
-          ? Uri.parse('${Uri.base.origin}/api$mappedEndpoint')
-          : Uri.parse('$baseUrl/api$mappedEndpoint');
+          ? Uri.parse('${Uri.base.origin}$mappedEndpoint')
+          : Uri.parse('$baseUrl$mappedEndpoint');
       final bodyData = body ?? data ?? {};
 
       if (ApiConfig.enableDebugLogging) {
         developer.log('POST $url with body: $bodyData', name: _tag);
       }
 
-      final response = await http.post(
-        url,
-        headers: await _getHeaders(),
-        body: json.encode(bodyData),
-      ).timeout(const Duration(seconds: ApiConfig.requestTimeout));
+      final response = await http
+          .post(
+            url,
+            headers: await _getHeaders(),
+            body: json.encode(bodyData),
+          )
+          .timeout(const Duration(seconds: ApiConfig.requestTimeout));
 
       return _handleResponse(response);
     } catch (e) {
@@ -105,19 +110,21 @@ class ApiClient {
     try {
       final mappedEndpoint = EndpointMapper.mapEndpoint(endpoint);
       final url = baseUrl.isEmpty
-          ? Uri.parse('${Uri.base.origin}/api$mappedEndpoint')
-          : Uri.parse('$baseUrl/api$mappedEndpoint');
+          ? Uri.parse('${Uri.base.origin}$mappedEndpoint')
+          : Uri.parse('$baseUrl$mappedEndpoint');
       final bodyData = body ?? {};
 
       if (ApiConfig.enableDebugLogging) {
         developer.log('PUT $url with body: $bodyData', name: _tag);
       }
 
-      final response = await http.put(
-        url,
-        headers: await _getHeaders(),
-        body: json.encode(bodyData),
-      ).timeout(const Duration(seconds: ApiConfig.requestTimeout));
+      final response = await http
+          .put(
+            url,
+            headers: await _getHeaders(),
+            body: json.encode(bodyData),
+          )
+          .timeout(const Duration(seconds: ApiConfig.requestTimeout));
 
       return _handleResponse(response);
     } catch (e) {
@@ -133,17 +140,19 @@ class ApiClient {
     try {
       final mappedEndpoint = EndpointMapper.mapEndpoint(endpoint);
       final url = baseUrl.isEmpty
-          ? Uri.parse('${Uri.base.origin}/api$mappedEndpoint')
-          : Uri.parse('$baseUrl/api$mappedEndpoint');
+          ? Uri.parse('${Uri.base.origin}$mappedEndpoint')
+          : Uri.parse('$baseUrl$mappedEndpoint');
 
       if (ApiConfig.enableDebugLogging) {
         developer.log('DELETE $url', name: _tag);
       }
 
-      final response = await http.delete(
-        url,
-        headers: await _getHeaders(),
-      ).timeout(const Duration(seconds: ApiConfig.requestTimeout));
+      final response = await http
+          .delete(
+            url,
+            headers: await _getHeaders(),
+          )
+          .timeout(const Duration(seconds: ApiConfig.requestTimeout));
 
       return _handleResponse(response);
     } catch (e) {
@@ -162,8 +171,8 @@ class ApiClient {
 
       if (ApiConfig.enableDebugLogging) {
         final debugUrl = baseUrl.isEmpty
-            ? '${Uri.base.origin}/api$mappedEndpoint'
-            : '$baseUrl/api$mappedEndpoint';
+            ? '${Uri.base.origin}$mappedEndpoint'
+            : '$baseUrl$mappedEndpoint';
         developer.log('FORM POST $debugUrl', name: _tag);
       }
 
@@ -198,7 +207,8 @@ class ApiClient {
         return body;
       } else {
         throw ApiException(
-          message: body['error'] ?? body['message'] ?? 'An unknown error occurred',
+          message:
+              body['error'] ?? body['message'] ?? 'An unknown error occurred',
           statusCode: response.statusCode,
         );
       }
