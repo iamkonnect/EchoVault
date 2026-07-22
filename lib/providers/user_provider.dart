@@ -189,6 +189,8 @@ class UserNotifier extends StateNotifier<User?> {
           await prefs.setString(_tokenKey, token);
         }
 
+        // Frontend users are created as 'USER' role by default (not ARTIST)
+        // They can upgrade to artist later via the Artist Mode toggle
         await prefs.setString(
             _userKey,
             jsonEncode({
@@ -196,7 +198,7 @@ class UserNotifier extends StateNotifier<User?> {
               'name': user['name'] ?? name,
               'username': user['username'] ?? username,
               'email': user['email'] ?? email,
-              'role': 'ARTIST',
+              'role': 'USER',
               'balance': 0.0,
             }));
 
@@ -205,7 +207,7 @@ class UserNotifier extends StateNotifier<User?> {
           name: user['name'] ?? name,
           username: user['username'] ?? username,
           email: user['email'] ?? email,
-          role: UserRole.artist,
+          role: UserRole.user,
           balance: 0.0,
         );
 
@@ -216,6 +218,54 @@ class UserNotifier extends StateNotifier<User?> {
       return false;
     } catch (e) {
       developer.log('Signup exception: $e', name: 'UserProvider');
+      return false;
+    }
+  }
+
+  /// Upgrade the current user's role to ARTIST via backend API
+  Future<bool> upgradeToArtist() async {
+    if (state == null) return false;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = await prefs.getString(_tokenKey);
+
+      if (token == null) {
+        developer.log('No token found for artist upgrade',
+            name: 'UserProvider');
+        return false;
+      }
+
+      developer.log('Upgrading user to artist...', name: 'UserProvider');
+
+      final result = await authService.upgradeToArtist(token);
+
+      developer.log('Upgrade result: $result', name: 'UserProvider');
+
+      if (result['success'] == true) {
+        // Update local state
+        final updatedUser = result['user'];
+
+        await prefs.setString(
+            _userKey,
+            jsonEncode({
+              'id': updatedUser['id'] ?? state!.id,
+              'name': updatedUser['name'] ?? state!.name,
+              'username': updatedUser['username'] ?? state!.username,
+              'email': updatedUser['email'] ?? state!.email,
+              'role': 'ARTIST',
+              'avatarUrl': updatedUser['avatarUrl'],
+              'balance':
+                  (updatedUser['walletBalance'] ?? state!.balance).toDouble(),
+            }));
+
+        state = state!.copyWith(role: UserRole.artist);
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      developer.log('Upgrade exception: $e', name: 'UserProvider');
       return false;
     }
   }
