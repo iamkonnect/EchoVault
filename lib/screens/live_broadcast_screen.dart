@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/user_provider.dart';
+import '../providers/auth_provider.dart';
 import '../services/realtime_service.dart';
 import '../providers/app_providers.dart';
 import '../services/camera_service.dart';
@@ -15,7 +16,8 @@ class LiveBroadcastScreen extends ConsumerStatefulWidget {
   const LiveBroadcastScreen({super.key, required this.streamData});
 
   @override
-  ConsumerState<LiveBroadcastScreen> createState() => _LiveBroadcastScreenState();
+  ConsumerState<LiveBroadcastScreen> createState() =>
+      _LiveBroadcastScreenState();
 }
 
 class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
@@ -28,7 +30,7 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
   final List<Map<String, dynamic>> _recentGifts = [];
   final List<Map<String, dynamic>> _recentMessages = [];
   bool _cameraReady = false;
-  
+
   bool get isBroadcaster => widget.streamData['isBroadcaster'] ?? false;
   bool get isGuest => ref.watch(userProvider) == null;
 
@@ -67,7 +69,7 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
     try {
       _realtimeService = ref.read(realtimeServiceProvider);
       final user = ref.read(userProvider);
-      final token = ref.read(authServiceProvider).getToken();
+      final token = ref.read(authStateProvider.notifier).getToken();
       if (token != null) {
         await _realtimeService!.connect(token);
         await _realtimeService!.joinStream(widget.streamData['id']);
@@ -97,7 +99,8 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
         ));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Realtime error: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Realtime error: $e')));
     }
   }
 
@@ -105,18 +108,19 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
     if (_chatController.text.trim().isEmpty || _realtimeService == null) return;
     try {
       final text = _chatController.text.trim();
-      final user = ref.read(userProvider) ?? const User(
-        id: 'guest',
-        name: 'Guest',
-        username: '@guest',
-        email: 'guest@example.com',
-      );
-      
+      final user = ref.read(userProvider) ??
+          const User(
+            id: 'guest',
+            name: 'Guest',
+            username: '@guest',
+            email: 'guest@example.com',
+          );
+
       final result = await _realtimeService!.sendChatMessage(
         text: text,
         streamId: widget.streamData['id'],
       );
-      
+
       if (result['success']) {
         _chatController.clear();
         final mockMsg = {
@@ -132,7 +136,8 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Send failed: $e')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Send failed: $e')));
     }
   }
 
@@ -150,20 +155,23 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.black87,
-        title: const Text('Sponsored Ad', style: TextStyle(color: Colors.white)),
+        title:
+            const Text('Sponsored Ad', style: TextStyle(color: Colors.white)),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.star, color: Colors.yellow, size: 64),
             SizedBox(height: 16),
-            Text('Upgrade to Premium for ad-free viewing!', style: TextStyle(color: Colors.white)),
+            Text('Upgrade to Premium for ad-free viewing!',
+                style: TextStyle(color: Colors.white)),
             Text('Limited time offer!', style: TextStyle(color: Colors.yellow)),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Skip (5s)', style: TextStyle(color: Colors.white)),
+            child:
+                const Text('Skip (5s)', style: TextStyle(color: Colors.white)),
           ),
           TextButton(
             onPressed: () {
@@ -172,7 +180,8 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
                 const SnackBar(content: Text('Premium unlocked! 🎉')),
               );
             },
-            child: const Text('Get Premium', style: TextStyle(color: Colors.purple)),
+            child: const Text('Get Premium',
+                style: TextStyle(color: Colors.purple)),
           ),
         ],
       ),
@@ -187,7 +196,7 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
         await _cameraService.stopRecording();
         await artistService.stopLiveStream(widget.streamData['id']);
         await _realtimeService?.leaveStream(widget.streamData['id']);
-        
+
         if (mounted) {
           setState(() => _isStreaming = false);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -199,8 +208,9 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
         }
       } else {
         // Start streaming - request permissions first
-        bool permissionsGranted = await PermissionService.requestCameraAndMicrophonePermissions();
-        
+        bool permissionsGranted =
+            await PermissionService.requestCameraAndMicrophonePermissions();
+
         if (!permissionsGranted && !kIsWeb) {
           if (mounted) {
             _showPermissionDeniedDialog();
@@ -218,9 +228,9 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
             );
           }
         }
-        
+
         await _cameraService.startRecording();
-        
+
         if (mounted) {
           setState(() => _isStreaming = true);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -267,7 +277,8 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
               PermissionService.openAppSettings();
               Navigator.pop(context);
             },
-            child: const Text('Open Settings', style: TextStyle(color: Colors.purple)),
+            child: const Text('Open Settings',
+                style: TextStyle(color: Colors.purple)),
           ),
         ],
       ),
@@ -323,10 +334,13 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.play_circle_outline, size: 128, color: Colors.white54),
+                    Icon(Icons.play_circle_outline,
+                        size: 128, color: Colors.white54),
                     SizedBox(height: 16),
-                    Text('Live Stream', style: TextStyle(color: Colors.white54, fontSize: 24)),
-                    Text('Waiting for video...', style: TextStyle(color: Colors.white38)),
+                    Text('Live Stream',
+                        style: TextStyle(color: Colors.white54, fontSize: 24)),
+                    Text('Waiting for video...',
+                        style: TextStyle(color: Colors.white38)),
                   ],
                 ),
               ),
@@ -357,7 +371,8 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
                       child: Stack(
                         children: [
                           ClipRRect(
-                            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+                            borderRadius: const BorderRadius.vertical(
+                                bottom: Radius.circular(20)),
                             child: _cameraService.getPreview(),
                           ),
                           if (_isStreaming)
@@ -365,7 +380,8 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
                               top: 20,
                               right: 20,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
                                   color: Colors.red,
                                   borderRadius: BorderRadius.circular(20),
@@ -373,7 +389,8 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
                                 child: const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.circle, color: Colors.white, size: 12),
+                                    Icon(Icons.circle,
+                                        color: Colors.white, size: 12),
                                     SizedBox(width: 4),
                                     Text(
                                       'LIVE',
@@ -410,7 +427,8 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
                                   ),
                                   Text(
                                     '$_viewerCount viewers',
-                                    style: const TextStyle(color: Colors.white70),
+                                    style:
+                                        const TextStyle(color: Colors.white70),
                                   ),
                                 ],
                               ),
@@ -429,14 +447,16 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: Colors.grey[900],
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                              borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(20)),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
                                 _InfoChip('Viewers', '$_viewerCount'),
                                 _InfoChip('Gifts', '${_recentGifts.length}'),
-                                _InfoChip('Messages', '${_recentMessages.length}'),
+                                _InfoChip(
+                                    'Messages', '${_recentMessages.length}'),
                               ],
                             ),
                           ),
@@ -452,14 +472,16 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
                                   return Padding(
                                     padding: const EdgeInsets.all(8),
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
                                       decoration: BoxDecoration(
                                         color: Colors.purple,
                                         borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: Text(
                                         '${gift['senderName']}: \$${gift['amount']}',
-                                        style: const TextStyle(color: Colors.white),
+                                        style: const TextStyle(
+                                            color: Colors.white),
                                       ),
                                     ),
                                   );
@@ -475,15 +497,18 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
                                     reverse: true,
                                     itemCount: _recentMessages.length,
                                     itemBuilder: (context, index) {
-                                      final msg = _recentMessages[_recentMessages.length - 1 - index];
+                                      final msg = _recentMessages[
+                                          _recentMessages.length - 1 - index];
                                       return ListTile(
                                         title: Text(
                                           msg['text'] ?? '',
-                                          style: const TextStyle(color: Colors.white),
+                                          style: const TextStyle(
+                                              color: Colors.white),
                                         ),
                                         subtitle: Text(
                                           msg['senderName'] ?? '',
-                                          style: const TextStyle(color: Colors.grey),
+                                          style: const TextStyle(
+                                              color: Colors.grey),
                                         ),
                                       );
                                     },
@@ -491,24 +516,31 @@ class _LiveBroadcastScreenState extends ConsumerState<LiveBroadcastScreen> {
                                 ),
                                 Container(
                                   padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(color: Colors.grey[800]),
+                                  decoration:
+                                      BoxDecoration(color: Colors.grey[800]),
                                   child: Row(
                                     children: [
                                       Expanded(
                                         child: TextField(
                                           controller: _chatController,
-                                          onSubmitted: (_) => _sendChatMessage(),
+                                          onSubmitted: (_) =>
+                                              _sendChatMessage(),
                                           decoration: const InputDecoration(
                                             hintText: 'Chat with viewers...',
                                             border: InputBorder.none,
-                                            hintStyle: TextStyle(color: Colors.white54),
-                                            contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                                            hintStyle: TextStyle(
+                                                color: Colors.white54),
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
+                                                    horizontal: 12),
                                           ),
-                                          style: const TextStyle(color: Colors.white),
+                                          style: const TextStyle(
+                                              color: Colors.white),
                                         ),
                                       ),
                                       IconButton(
-                                        icon: const Icon(Icons.send, color: Colors.purple),
+                                        icon: const Icon(Icons.send,
+                                            color: Colors.purple),
                                         onPressed: _sendChatMessage,
                                       ),
                                     ],

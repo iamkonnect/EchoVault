@@ -1,13 +1,9 @@
-# TODO - Web camera preview fix
+# Fix Image Path & Deployment Issues
 
-- [ ] Implement web camera preview + mic using getUserMedia in `lib/services/camera_service.dart`.
-  - [ ] Add `dart:html`-based video element preview wrapped in Flutter (`HtmlElementView`).
-  - [ ] Ensure permissions are requested and errors are surfaced.
-- [ ] Update `CameraService.startRecording()` on web to start the stream and mark ready only after getUserMedia resolves.
-- [ ] Update `lib/screens/live_broadcast_screen.dart`:
-  - [ ] Only show “✓ Stream started” after camera preview/stream is active.
-  - [ ] Ensure `_cameraReady` becomes true on web after getUserMedia.
-- [ ] Run/build checks:
-  - [ ] `flutter analyze`
-  - [ ] `flutter run -d chrome` (verify camera preview renders and permission prompt appears).
+## Steps
+- [x] 1. Delete `assets/assets/` directory (contains empty `featured_echo_1.jpeg`)
+- [x] 2. Edit `pubspec.yaml` - remove `- assets/assets/` line
+- [x] 3. Edit `Dockerfile` - add `RUN chmod -R a+rX /usr/share/nginx/html`
+- [ ] 4. Run `flutter clean && flutter pub get && flutter build web --release`
+- [ ] 5. Commit and push to main branch
 

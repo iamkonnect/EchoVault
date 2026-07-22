@@ -8,6 +8,7 @@ import '../services/artist_service_v2.dart';
 import '../services/realtime_service.dart';
 import '../services/token_refresh_service.dart';
 import '../services/cache_service.dart';
+import 'auth_provider.dart';
 
 // ============ API CLIENT PROVIDERS ============
 
@@ -35,7 +36,7 @@ final tokenRefreshServiceProvider = Provider<TokenRefreshService>((ref) {
 /// Token expiration monitoring
 final tokenExpirationProvider = StreamProvider<bool>((ref) async* {
   final tokenService = ref.watch(tokenRefreshServiceProvider);
-  
+
   while (true) {
     yield tokenService.isTokenExpiredOrExpiring();
     await Future.delayed(const Duration(seconds: 60)); // Check every minute
@@ -87,7 +88,7 @@ final notificationsStreamProvider = StreamProvider<Map<String, dynamic>>((ref) {
 /// Authentication service
 final authServiceProvider = Provider<AuthService>((ref) {
   final apiClient = ref.watch(apiClientProvider);
-  return AuthService(apiClient: apiClient);
+  return AuthService(dio: apiClient.getDio());
 });
 
 /// General API service for tracks, albums, artists, playlists
@@ -115,8 +116,7 @@ final authTokenProvider = StateProvider<String?>((ref) {
 
 /// Authentication status
 final isAuthenticatedProvider = Provider<bool>((ref) {
-  final authService = ref.watch(authServiceProvider);
-  return authService.isAuthenticated();
+  return ref.watch(authStateProvider).isAuthenticated;
 });
 
 // ============ USER DATA PROVIDERS ============
@@ -128,7 +128,8 @@ final userProfileProvider = FutureProvider<Map<String, dynamic>>((ref) async {
 });
 
 /// Cached user profile (from offline storage)
-final cachedUserProfileProvider = FutureProvider<Map<String, dynamic>?>((ref) async {
+final cachedUserProfileProvider =
+    FutureProvider<Map<String, dynamic>?>((ref) async {
   final cacheService = await ref.watch(cacheServiceProvider.future);
   return cacheService.getUserProfile();
 });
@@ -137,22 +138,23 @@ final cachedUserProfileProvider = FutureProvider<Map<String, dynamic>?>((ref) as
 
 /// Search tracks
 final searchTracksProvider =
-    FutureProvider.family<List<Map<String, dynamic>>, String>((ref, query) async {
+    FutureProvider.family<List<Map<String, dynamic>>, String>(
+        (ref, query) async {
   final apiService = ref.watch(apiServiceProvider);
   final cacheService = await ref.watch(cacheServiceProvider.future);
-  
+
   // Check cache first
   final cached = cacheService.getCachedData('search_$query');
   if (cached != null && cached['tracks'] != null) {
     return List<Map<String, dynamic>>.from(cached['tracks']);
   }
-  
+
   // Fetch from API
   final tracks = await apiService.searchTracks(query);
-  
+
   // Cache result
   await cacheService.cacheData('search_$query', {'tracks': tracks});
-  
+
   return tracks;
 });
 
@@ -161,19 +163,19 @@ final trendingTracksProvider =
     FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final apiService = ref.watch(apiServiceProvider);
   final cacheService = await ref.watch(cacheServiceProvider.future);
-  
+
   // Check cache first
   final cached = cacheService.getCachedData('trending_tracks');
   if (cached != null && cached['tracks'] != null) {
     return List<Map<String, dynamic>>.from(cached['tracks']);
   }
-  
+
   // Fetch from API
   final tracks = await apiService.getTrendingTracks();
-  
+
   // Cache result
   await cacheService.cacheData('trending_tracks', {'tracks': tracks});
-  
+
   return tracks;
 });
 
@@ -182,34 +184,34 @@ final homeRecommendationsProvider =
     FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final apiService = ref.watch(apiServiceProvider);
   final cacheService = await ref.watch(cacheServiceProvider.future);
-  
+
   // Check cache first
   final cached = cacheService.getCachedData('home_recommendations');
   if (cached != null && cached['recommendations'] != null) {
     return List<Map<String, dynamic>>.from(cached['recommendations']);
   }
-  
+
   // Fetch from API
   final recommendations = await apiService.getHomeRecommendations();
-  
+
   // Cache result
-  await cacheService.cacheData('home_recommendations', {'recommendations': recommendations});
-  
+  await cacheService
+      .cacheData('home_recommendations', {'recommendations': recommendations});
+
   return recommendations;
 });
 
 /// Get tracks by genre
-final tracksByGenreProvider = FutureProvider.family<
-    List<Map<String, dynamic>>,
-    String>((ref, genre) async {
+final tracksByGenreProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String>(
+        (ref, genre) async {
   final apiService = ref.watch(apiServiceProvider);
   return await apiService.getTracksByGenre(genre);
 });
 
 /// Get single track details
-final trackDetailsProvider = FutureProvider.family<
-    Map<String, dynamic>,
-    String>((ref, trackId) async {
+final trackDetailsProvider =
+    FutureProvider.family<Map<String, dynamic>, String>((ref, trackId) async {
   final apiService = ref.watch(apiServiceProvider);
   return await apiService.getTrack(trackId);
 });
@@ -219,14 +221,14 @@ final likedTracksProvider =
     FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final apiService = ref.watch(apiServiceProvider);
   final cacheService = await ref.watch(cacheServiceProvider.future);
-  
+
   try {
     // Try to fetch from API
     final tracks = await apiService.getLikedTracks();
-    
+
     // Cache result
     await cacheService.cachePlaylists(tracks);
-    
+
     return tracks;
   } catch (e) {
     // Fallback to cached data
@@ -241,17 +243,16 @@ final likedTracksProvider =
 // ============ ALBUM PROVIDERS ============
 
 /// Get album details
-final albumDetailsProvider = FutureProvider.family<
-    Map<String, dynamic>,
-    String>((ref, albumId) async {
+final albumDetailsProvider =
+    FutureProvider.family<Map<String, dynamic>, String>((ref, albumId) async {
   final apiService = ref.watch(apiServiceProvider);
   return await apiService.getAlbum(albumId);
 });
 
 /// Get tracks in album
-final albumTracksProvider = FutureProvider.family<
-    List<Map<String, dynamic>>,
-    String>((ref, albumId) async {
+final albumTracksProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String>(
+        (ref, albumId) async {
   final apiService = ref.watch(apiServiceProvider);
   return await apiService.getAlbumTracks(albumId);
 });
@@ -259,17 +260,16 @@ final albumTracksProvider = FutureProvider.family<
 // ============ ARTIST PROVIDERS ============
 
 /// Get artist details
-final artistDetailsProvider = FutureProvider.family<
-    Map<String, dynamic>,
-    String>((ref, artistId) async {
+final artistDetailsProvider =
+    FutureProvider.family<Map<String, dynamic>, String>((ref, artistId) async {
   final apiService = ref.watch(apiServiceProvider);
   return await apiService.getArtist(artistId);
 });
 
 /// Get tracks by artist
-final artistTracksProvider = FutureProvider.family<
-    List<Map<String, dynamic>>,
-    String>((ref, artistId) async {
+final artistTracksProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String>(
+        (ref, artistId) async {
   final apiService = ref.watch(apiServiceProvider);
   return await apiService.getArtistTracks(artistId);
 });
@@ -284,8 +284,7 @@ final artistDashboardProvider =
 });
 
 /// Get artist's music uploads
-final artistMusicProvider =
-    FutureProvider<Map<String, dynamic>>((ref) async {
+final artistMusicProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final artistService = ref.watch(artistServiceProvider);
   return await artistService.getArtistMusic();
 });
@@ -305,8 +304,7 @@ final shortsInsightsProvider =
 });
 
 /// Get revenue data (important for gift-based income)
-final revenueProvider =
-    FutureProvider<Map<String, dynamic>>((ref) async {
+final revenueProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final artistService = ref.watch(artistServiceProvider);
   return await artistService.getRevenueData();
 });
@@ -321,9 +319,8 @@ final payoutHistoryProvider =
 // ============ PLAYLIST PROVIDERS ============
 
 /// Get playlist tracks
-final playlistProvider = FutureProvider.family<
-    Map<String, dynamic>,
-    String>((ref, playlistId) async {
+final playlistProvider = FutureProvider.family<Map<String, dynamic>, String>(
+    (ref, playlistId) async {
   final apiService = ref.watch(apiServiceProvider);
   return await apiService.getUserPlaylist(playlistId);
 });
@@ -331,9 +328,10 @@ final playlistProvider = FutureProvider.family<
 // ============ GIFT & MONETIZATION PROVIDERS ============
 
 /// Get available gifts for UI display
-final availableGiftsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final availableGiftsProvider =
+    FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final realtimeService = ref.watch(realtimeServiceProvider);
-  
+
   try {
     return await realtimeService.getAvailableGifts();
   } catch (e) {

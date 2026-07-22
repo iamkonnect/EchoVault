@@ -5,13 +5,12 @@ import 'dart:developer' as developer;
 import '../models/user.dart';
 import '../models/gift.dart';
 import '../services/auth_service_v2.dart';
-import '../services/api_client.dart';
 import '../l10n/gift_service.dart';
 import 'app_providers.dart';
 
 class UserNotifier extends StateNotifier<User?> {
   final AuthService authService;
-  
+
   UserNotifier(this.authService) : super(null) {
     _loadUser();
   }
@@ -24,7 +23,7 @@ class UserNotifier extends StateNotifier<User?> {
   Future<void> _loadUser() async {
     final prefs = await SharedPreferences.getInstance();
     final userData = prefs.getString(_userKey);
-    
+
     if (userData == null) {
       state = null;
       return;
@@ -78,7 +77,8 @@ class UserNotifier extends StateNotifier<User?> {
   void addEarning(UserEarning earning) {
     if (state == null) return;
     final newEarnings = List<UserEarning>.from(state!.earnings)..add(earning);
-    state = state!.copyWith(earnings: newEarnings, balance: state!.balance + earning.amount);
+    state = state!.copyWith(
+        earnings: newEarnings, balance: state!.balance + earning.amount);
   }
 
   Future<bool> sendGift(Gift gift) async {
@@ -96,14 +96,14 @@ class UserNotifier extends StateNotifier<User?> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_userKey);
     await prefs.remove(_tokenKey);
-    await authService.logout();
+    await authService.logout('');
     state = null;
   }
 
   Future<void> deactivate() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-    await authService.logout();
+    await authService.logout('');
     state = null;
   }
 
@@ -111,47 +111,53 @@ class UserNotifier extends StateNotifier<User?> {
   Future<bool> signIn(String email, String password) async {
     try {
       developer.log('Attempting login for: $email', name: 'UserProvider');
-      
+
       final result = await authService.login(email: email, password: password);
-      
+
       developer.log('Login result: $result', name: 'UserProvider');
-      
+
       if (result['success'] == true && result['user'] != null) {
         final user = result['user'];
         final token = result['token'];
-        
-        developer.log('Login successful, storing credentials', name: 'UserProvider');
-        
+
+        developer.log('Login successful, storing credentials',
+            name: 'UserProvider');
+
         final prefs = await SharedPreferences.getInstance();
         if (token != null) {
           await prefs.setString(_tokenKey, token);
         }
-        
-        await prefs.setString(_userKey, jsonEncode({
-          'id': user['id'] ?? '',
-          'name': user['name'] ?? '',
-          'username': user['username'] ?? '',
-          'email': user['email'] ?? email,
-          'role': user['role'] ?? 'USER',
-          'avatarUrl': user['avatarUrl'],
-          'balance': (user['balance'] ?? 0.0).toDouble(),
-        }));
-        
+
+        await prefs.setString(
+            _userKey,
+            jsonEncode({
+              'id': user['id'] ?? '',
+              'name': user['name'] ?? '',
+              'username': user['username'] ?? '',
+              'email': user['email'] ?? email,
+              'role': user['role'] ?? 'USER',
+              'avatarUrl': user['avatarUrl'],
+              'balance': (user['balance'] ?? 0.0).toDouble(),
+            }));
+
         state = User(
           id: user['id'] ?? '',
           name: user['name'] ?? 'User',
           username: user['username'] ?? '',
           email: user['email'] ?? email,
           avatarUrl: user['avatarUrl'],
-          role: (user['role'] ?? 'USER').toString().toUpperCase().contains('ARTIST') 
-              ? UserRole.artist 
+          role: (user['role'] ?? 'USER')
+                  .toString()
+                  .toUpperCase()
+                  .contains('ARTIST')
+              ? UserRole.artist
               : UserRole.user,
           balance: (user['balance'] ?? 0.0).toDouble(),
         );
-        
+
         return true;
       }
-      
+
       developer.log('Login failed: ${result['error']}', name: 'UserProvider');
       return false;
     } catch (e) {
@@ -161,37 +167,39 @@ class UserNotifier extends StateNotifier<User?> {
   }
 
   /// Sign up with backend API
-  Future<bool> signUp(String name, String username, String email, String password) async {
+  Future<bool> signUp(
+      String name, String username, String email, String password) async {
     try {
       developer.log('Attempting signup for: $email', name: 'UserProvider');
-      
+
       final result = await authService.register(
         email: email,
         password: password,
         name: name,
-        role: 'ARTIST',
       );
-      
+
       developer.log('Signup result: $result', name: 'UserProvider');
-      
+
       if (result['success'] == true && result['user'] != null) {
         final user = result['user'];
         final token = result['token'];
-        
+
         final prefs = await SharedPreferences.getInstance();
         if (token != null) {
           await prefs.setString(_tokenKey, token);
         }
-        
-        await prefs.setString(_userKey, jsonEncode({
-          'id': user['id'] ?? '',
-          'name': user['name'] ?? name,
-          'username': user['username'] ?? username,
-          'email': user['email'] ?? email,
-          'role': 'ARTIST',
-          'balance': 0.0,
-        }));
-        
+
+        await prefs.setString(
+            _userKey,
+            jsonEncode({
+              'id': user['id'] ?? '',
+              'name': user['name'] ?? name,
+              'username': user['username'] ?? username,
+              'email': user['email'] ?? email,
+              'role': 'ARTIST',
+              'balance': 0.0,
+            }));
+
         state = User(
           id: user['id'] ?? '',
           name: user['name'] ?? name,
@@ -200,10 +208,10 @@ class UserNotifier extends StateNotifier<User?> {
           role: UserRole.artist,
           balance: 0.0,
         );
-        
+
         return true;
       }
-      
+
       developer.log('Signup failed: ${result['error']}', name: 'UserProvider');
       return false;
     } catch (e) {
@@ -227,7 +235,7 @@ final userAsyncProvider = FutureProvider<User>((ref) async {
   final user = ref.watch(userProvider);
   if (user != null) return user;
   await Future.delayed(const Duration(milliseconds: 500));
-  
+
   final finalUser = ref.read(userProvider);
   if (finalUser == null) throw Exception('User data not initialized');
   return finalUser;

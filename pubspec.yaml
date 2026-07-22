@@ -45,6 +45,5 @@ flutter:
 
   assets:
     - assets/
-    - assets/assets/
     - assets/samples/
 
