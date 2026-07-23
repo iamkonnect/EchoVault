@@ -462,11 +462,8 @@ class _AuthModalState extends ConsumerState<AuthModal> {
 
   /// Opens the backend OAuth URL for the given provider
   Future<void> _launchOAuth(String provider) async {
-    String baseUrl = ApiConfig.baseUrl;
-    if (baseUrl.endsWith('/api')) {
-      baseUrl = baseUrl.substring(0, baseUrl.length - 4);
-    }
-    final oauthUrl = '$baseUrl/api/auth/$provider';
+    final baseUrl = ApiConfig.baseUrl;
+    final oauthUrl = '$baseUrl/auth/$provider';
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

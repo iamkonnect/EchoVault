@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
 import '../config/api_config.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:io' show Platform;
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -70,9 +69,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   /// Launches OAuth URL for Google or Apple sign-in
   /// The backend handles the OAuth flow and redirects back to app via auth callback
-  Future<void> _launchOAuth(String provider) async {
-    final baseUrl = ApiConfig.baseUrl.replaceAll('/api', '');
-    final oauthUrl = '$baseUrl/api/auth/$provider';
+Future<void> _launchOAuth(String provider) async {
+    final baseUrl = ApiConfig.baseUrl;
+    final oauthUrl = '$baseUrl/auth/$provider';
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
