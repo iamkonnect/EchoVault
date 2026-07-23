@@ -1,9 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/user_provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/image_utils.dart';
+import '../config/api_config.dart';
 
 class AuthModal extends ConsumerStatefulWidget {
   const AuthModal({super.key});
@@ -208,7 +210,6 @@ class _AuthModalState extends ConsumerState<AuthModal> {
         onPressed: _isLoading
             ? null
             : () {
-                // Show forgot password dialog
                 final emailController = TextEditingController();
                 showDialog(
                   context: context,
@@ -379,13 +380,11 @@ class _AuthModalState extends ConsumerState<AuthModal> {
             : () async {
                 if (_formKey.currentState!.validate()) {
                   setState(() => _isLoading = true);
-
                   final notifier = ref.read(userProvider.notifier);
                   final email = _emailController.text.trim();
                   final password = _passwordController.text;
                   final name = _nameController.text.trim();
                   final username = _usernameController.text.trim();
-
                   bool success;
                   if (isLogin) {
                     success = await notifier.signIn(email, password);
@@ -393,7 +392,6 @@ class _AuthModalState extends ConsumerState<AuthModal> {
                     success =
                         await notifier.signUp(name, username, email, password);
                   }
-
                   if (mounted) {
                     setState(() => _isLoading = false);
                     if (success) {
@@ -462,6 +460,31 @@ class _AuthModalState extends ConsumerState<AuthModal> {
     );
   }
 
+  /// Opens the backend OAuth URL for the given provider
+  Future<void> _launchOAuth(String provider) async {
+    String baseUrl = ApiConfig.baseUrl;
+    if (baseUrl.endsWith('/api')) {
+      baseUrl = baseUrl.substring(0, baseUrl.length - 4);
+    }
+    final oauthUrl = '$baseUrl/api/auth/$provider';
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Opening $provider Sign-In...'),
+        backgroundColor: const Color(0xFF8B5CF9),
+      ),
+    );
+
+    try {
+      await launchUrl(
+        Uri.parse(oauthUrl),
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (e) {
+      debugPrint('$provider OAuth error: $e');
+    }
+  }
+
   Widget _buildSocialLogins() {
     return Column(
       children: [
@@ -488,31 +511,16 @@ class _AuthModalState extends ConsumerState<AuthModal> {
         Row(
           children: [
             Expanded(
-                child: _buildSocialButton(Icons.g_mobiledata, 'Google', () {
-              // Google OAuth - backend redirects to /auth/callback?token=xxx&provider=google
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Opening Google Sign-In...'),
-                  backgroundColor: Color(0xFF8B5CF9),
-                ),
-              );
-              // For Flutter web: window.open('/api/auth/google', '_self')
-              // For mobile: url_launcher opens 'https://admin.echovaultz.com/api/auth/google'
-              // Backend handles OAuth flow and redirects back to app
-            })),
+              child: _buildSocialButton(Icons.g_mobiledata, 'Google', () {
+                _launchOAuth('google');
+              }),
+            ),
             const SizedBox(width: 16),
             Expanded(
-                child: _buildSocialButton(Icons.apple, 'Apple', () {
-              // Apple OAuth - backend redirects to /auth/callback?token=xxx&provider=apple
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Opening Apple Sign-In...'),
-                  backgroundColor: Color(0xFF8B5CF9),
-                ),
-              );
-              // For Flutter web: window.open('/api/auth/apple', '_self')
-              // For mobile: url_launcher opens 'https://admin.echovaultz.com/api/auth/apple'
-            })),
+              child: _buildSocialButton(Icons.apple, 'Apple', () {
+                _launchOAuth('apple');
+              }),
+            ),
           ],
         ),
       ],

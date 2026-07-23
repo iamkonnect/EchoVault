@@ -29,7 +29,7 @@ class AuthService {
   }) async {
     try {
       final response = await _dio.post(
-        '/api/auth/register',
+        '/auth/register',
         data: {
           'email': email,
           'password': password,
@@ -69,7 +69,7 @@ class AuthService {
   }) async {
     try {
       final response = await _dio.post(
-        '/api/auth/login',
+        '/auth/login',
         data: {
           'email': email,
           'password': password,
@@ -105,7 +105,7 @@ class AuthService {
   Future<bool> logout(String token) async {
     try {
       await _dio.post(
-        '/api/auth/logout',
+        '/auth/logout',
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
@@ -122,7 +122,7 @@ class AuthService {
   Future<Map<String, dynamic>> refreshToken(String token) async {
     try {
       final response = await _dio.post(
-        '/api/auth/refresh',
+        '/auth/refresh',
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
@@ -149,7 +149,7 @@ class AuthService {
   Future<Map<String, dynamic>> verifyAuth(String token) async {
     try {
       final response = await _dio.post(
-        '/api/auth/verify',
+        '/auth/verify',
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
@@ -182,7 +182,7 @@ class AuthService {
   Future<Map<String, dynamic>> forgotPassword(String email) async {
     try {
       final response = await _dio.post(
-        '/api/auth/forgot-password',
+        '/auth/forgot-password',
         data: {'email': email},
       );
       return {
@@ -208,7 +208,7 @@ class AuthService {
   Future<Map<String, dynamic>> resendVerification(String token) async {
     try {
       final response = await _dio.post(
-        '/api/auth/send-verification',
+        '/auth/send-verification',
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),
@@ -236,7 +236,7 @@ class AuthService {
   Future<Map<String, dynamic>> upgradeToArtist(String token) async {
     try {
       final response = await _dio.post(
-        '/api/auth/upgrade-artist',
+        '/auth/upgrade-artist',
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
         ),

@@ -279,7 +279,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
     try {
       final response = await http
           .get(
-            Uri.parse('${ApiConfig.baseUrl}/api/live/streams/active'),
+            Uri.parse('${ApiConfig.baseUrl}/live/streams/active'),
           )
           .timeout(const Duration(seconds: 30));
 
@@ -333,8 +333,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       child: thumbnail != null
           ? ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image(
-                image: AssetImage('assets/$thumbnail'),
+              child: Image.network(
+                thumbnail.startsWith('http')
+                    ? thumbnail
+                    : 'https://ui-avatars.com/api/?name=Live+Stream&background=8B5CF6&color=ffffff&size=400',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Center(

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
+import '../config/api_config.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'dart:io' show Platform;
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -63,6 +66,36 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         backgroundColor: Colors.red,
       ),
     );
+  }
+
+  /// Launches OAuth URL for Google or Apple sign-in
+  /// The backend handles the OAuth flow and redirects back to app via auth callback
+  Future<void> _launchOAuth(String provider) async {
+    final baseUrl = ApiConfig.baseUrl.replaceAll('/api', '');
+    final oauthUrl = '$baseUrl/api/auth/$provider';
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Opening $provider Sign-In...'),
+        backgroundColor: const Color(0xFF7c3aed),
+      ),
+    );
+
+    try {
+      await launchUrl(
+        Uri.parse(oauthUrl),
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not open $provider sign-in: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -323,14 +356,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   width: double.infinity,
                   height: 48,
                   child: OutlinedButton.icon(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Opening Google Sign-In...'),
-                          backgroundColor: Color(0xFF7c3aed),
-                        ),
-                      );
-                    },
+                    onPressed: () => _launchOAuth('google'),
                     icon: const Icon(Icons.g_mobiledata, color: Colors.white, size: 24),
                     label: const Text('Continue with Google',
                         style: TextStyle(color: Colors.white, fontSize: 14)),
@@ -350,14 +376,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   width: double.infinity,
                   height: 48,
                   child: OutlinedButton.icon(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Opening Apple Sign-In...'),
-                          backgroundColor: Color(0xFF7c3aed),
-                        ),
-                      );
-                    },
+                    onPressed: () => _launchOAuth('apple'),
                     icon: const Icon(Icons.apple, color: Colors.white, size: 24),
                     label: const Text('Continue with Apple',
                         style: TextStyle(color: Colors.white, fontSize: 14)),
@@ -406,3 +425,4 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     );
   }
 }
+
