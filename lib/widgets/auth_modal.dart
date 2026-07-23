@@ -1,8 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/user_provider.dart';
+import '../providers/auth_provider.dart';
 import '../services/image_utils.dart';
+import '../config/api_config.dart';
 
 class AuthModal extends ConsumerStatefulWidget {
   const AuthModal({super.key});
@@ -207,7 +210,73 @@ class _AuthModalState extends ConsumerState<AuthModal> {
         onPressed: _isLoading
             ? null
             : () {
-                // Handle forgot password logic
+                final emailController = TextEditingController();
+                showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    backgroundColor: const Color(0xFF1A1A1E),
+                    title: const Text('Reset Password',
+                        style: TextStyle(color: Colors.white)),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Enter your email address and we\'ll send you a link to reset your password.',
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: emailController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            hintText: 'Email Address',
+                            hintStyle:
+                                TextStyle(color: Colors.white.withOpacity(0.3)),
+                            prefixIcon: const Icon(Icons.email,
+                                color: Color(0xFF8B5CF9)),
+                            filled: true,
+                            fillColor: Colors.white.withOpacity(0.05),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text('Cancel',
+                            style: TextStyle(color: Colors.white70)),
+                      ),
+                      TextButton(
+                        onPressed: () async {
+                          final email = emailController.text.trim();
+                          if (email.isEmpty) return;
+                          final authNotifier =
+                              ref.read(authStateProvider.notifier);
+                          final message =
+                              await authNotifier.forgotPassword(email);
+                          if (ctx.mounted) {
+                            Navigator.pop(ctx);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(message ??
+                                    'Reset link sent if email exists'),
+                                backgroundColor: const Color(0xFF8B5CF9),
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text('Send Reset Link',
+                            style: TextStyle(
+                                color: Color(0xFF8B5CF9),
+                                fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                );
               },
         child: Text(
           'Forgot Password?',
@@ -311,13 +380,11 @@ class _AuthModalState extends ConsumerState<AuthModal> {
             : () async {
                 if (_formKey.currentState!.validate()) {
                   setState(() => _isLoading = true);
-
                   final notifier = ref.read(userProvider.notifier);
                   final email = _emailController.text.trim();
                   final password = _passwordController.text;
                   final name = _nameController.text.trim();
                   final username = _usernameController.text.trim();
-
                   bool success;
                   if (isLogin) {
                     success = await notifier.signIn(email, password);
@@ -325,7 +392,6 @@ class _AuthModalState extends ConsumerState<AuthModal> {
                     success =
                         await notifier.signUp(name, username, email, password);
                   }
-
                   if (mounted) {
                     setState(() => _isLoading = false);
                     if (success) {
@@ -394,6 +460,28 @@ class _AuthModalState extends ConsumerState<AuthModal> {
     );
   }
 
+  /// Opens the backend OAuth URL for the given provider
+  Future<void> _launchOAuth(String provider) async {
+    final baseUrl = ApiConfig.baseUrl;
+    final oauthUrl = '$baseUrl/auth/$provider';
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Opening $provider Sign-In...'),
+        backgroundColor: const Color(0xFF8B5CF9),
+      ),
+    );
+
+    try {
+      await launchUrl(
+        Uri.parse(oauthUrl),
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (e) {
+      debugPrint('$provider OAuth error: $e');
+    }
+  }
+
   Widget _buildSocialLogins() {
     return Column(
       children: [
@@ -420,9 +508,16 @@ class _AuthModalState extends ConsumerState<AuthModal> {
         Row(
           children: [
             Expanded(
-                child: _buildSocialButton(Icons.g_mobiledata, 'Google', () {})),
+              child: _buildSocialButton(Icons.g_mobiledata, 'Google', () {
+                _launchOAuth('google');
+              }),
+            ),
             const SizedBox(width: 16),
-            Expanded(child: _buildSocialButton(Icons.apple, 'Apple', () {})),
+            Expanded(
+              child: _buildSocialButton(Icons.apple, 'Apple', () {
+                _launchOAuth('apple');
+              }),
+            ),
           ],
         ),
       ],

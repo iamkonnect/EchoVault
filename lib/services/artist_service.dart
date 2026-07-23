@@ -16,13 +16,15 @@ class ArtistService {
 
   Future<Map<String, dynamic>> getArtistInsights() async {
     try {
-      final response = await _dio.get('${baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl}/api/artist/insights');
+      final response = await _dio.get(
+          '${baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl}/artist/insights');
       return {
         'success': true,
         'data': response.data,
       };
     } catch (e) {
-      developer.log('Failed to fetch artist insights: $e', name: 'ArtistService');
+      developer.log('Failed to fetch artist insights: $e',
+          name: 'ArtistService');
       return {
         'success': false,
         'error': e.toString(),
@@ -45,7 +47,7 @@ class ArtistService {
       });
 
       final response = await _dio.post(
-        '${baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl}/api/artist/upload',
+        '${baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl}/artist/upload',
         data: formData,
       );
 
@@ -64,7 +66,8 @@ class ArtistService {
 
   Future<Map<String, dynamic>> getArtistMusic() async {
     try {
-      final response = await _dio.get('${baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl}/api/artist/music');
+      final response = await _dio
+          .get('${baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl}/artist/music');
       return {
         'success': true,
         'data': response.data,
@@ -83,7 +86,7 @@ class ArtistService {
   }) async {
     try {
       final response = await _dio.post(
-        '${baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl}/api/artist/withdraw',
+        '${baseUrl.isEmpty ? ApiConfig.baseUrl : baseUrl}/artist/withdraw',
         data: {
           'amount': amount,
         },

@@ -3,11 +3,10 @@ const MANIFEST = 'flutter-app-manifest';
 const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 
-const RESOURCES = {"assets/AssetManifest.bin": "2ae17aae9b44548b100722b82216dbcf",
-"assets/AssetManifest.bin.json": "4c1b1ecb3fc6080b096f6f73b18d7567",
-"assets/AssetManifest.json": "11bc216d28eca42a591afca0d03ec346",
+const RESOURCES = {"assets/AssetManifest.bin": "1ccd0831a5c382d59907029e415d9ccb",
+"assets/AssetManifest.bin.json": "6f61c58f1a1ebb0c7962d912dc9185db",
+"assets/AssetManifest.json": "ef5ad5e461bc622dff58d1c3055f3152",
 "assets/assets/appicon.svg": "d41d8cd98f00b204e9800998ecf8427e",
-"assets/assets/assets/featured_echo_1.jpeg": "d41d8cd98f00b204e9800998ecf8427e",
 "assets/assets/Echo-Vault-Icon.png": "2677c2b3d4576699a10ce48e456b1cec",
 "assets/assets/samples/album-jpegmafia.jpg": "d41d8cd98f00b204e9800998ecf8427e",
 "assets/assets/samples/album-pushat.jpg": "d41d8cd98f00b204e9800998ecf8427e",
@@ -51,7 +50,7 @@ const RESOURCES = {"assets/AssetManifest.bin": "2ae17aae9b44548b100722b82216dbcf
 "assets/assets/WhatsApp%2520Image%25202026-03-17%2520at%252013.04.46%2520(9).jpeg": "877067d107069bb0d00f3584938a8cba",
 "assets/assets/WhatsApp%2520Image%25202026-03-17%2520at%252013.04.46.jpeg": "c5506acdb1707f095f7c2482d14c8248",
 "assets/FontManifest.json": "dc3d03800ccca4601324923c0b1d6d57",
-"assets/fonts/MaterialIcons-Regular.otf": "926394ebb41cec9ee15b1b9eb2ee4f2d",
+"assets/fonts/MaterialIcons-Regular.otf": "d18a736cb82bb4a448d6f252bd9bc0af",
 "assets/NOTICES": "dbbf719406bdb094fb31f4b517fad08c",
 "assets/packages/cupertino_icons/assets/CupertinoIcons.ttf": "33b7d9392238c04c131b6ce224e13711",
 "assets/shaders/ink_sparkle.frag": "ecc85a2e95f5e9f53123dcaf8cb9b6ce",
@@ -69,7 +68,7 @@ const RESOURCES = {"assets/AssetManifest.bin": "2ae17aae9b44548b100722b82216dbcf
 "canvaskit/skwasm_st.wasm": "56c3973560dfcbf28ce47cebe40f3206",
 "favicon.png": "2677c2b3d4576699a10ce48e456b1cec",
 "flutter.js": "76f08d47ff9f5715220992f993002504",
-"flutter_bootstrap.js": "b5b38eb82fc5a2acebe01208ad60e1aa",
+"flutter_bootstrap.js": "f2781436485f6373f7ffba595c11bd3f",
 "icons/Echo-Vault-Icon.png": "2677c2b3d4576699a10ce48e456b1cec",
 "icons/Icon-192.png": "ac9a721a12bbc803b44f645561ecb1e1",
 "icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
@@ -77,7 +76,7 @@ const RESOURCES = {"assets/AssetManifest.bin": "2ae17aae9b44548b100722b82216dbcf
 "icons/Icon-maskable-512.png": "301a7604d45b3e739efc881eb04896ea",
 "index.html": "ff7d11a293ac30cfb18b0309c8665a72",
 "/": "ff7d11a293ac30cfb18b0309c8665a72",
-"main.dart.js": "0a83417842dc6fa4133e47cfc8d17a4d",
+"main.dart.js": "1f4fc63d9cbe00e9cb077b1ff59134f3",
 "manifest.json": "a2945cbdce255d50c627bead3c69905e",
 "service_worker.js": "ff129adca045efde4904cc8d097fa443",
 "version.json": "564990b5c9c5601eeba93b9342fa8d9a"};

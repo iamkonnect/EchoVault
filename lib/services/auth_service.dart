@@ -2,10 +2,6 @@ import 'package:dio/dio.dart';
 import 'dart:developer' as developer;
 import '../config/api_config.dart';
 
-/// DEPRECATED: Use auth_service_v2.dart instead
-/// This file is kept for backward compatibility only
-/// All authentication should use AuthService from auth_service_v2.dart with ApiClient
-
 class AuthService {
   final Dio _dio = Dio();
   final String baseUrl;
@@ -16,7 +12,6 @@ class AuthService {
     _dio.options.receiveTimeout = const Duration(seconds: 30);
   }
 
-  /// DEPRECATED: Register a new user
   Future<Map<String, dynamic>> register({
     required String email,
     required String password,
@@ -25,7 +20,7 @@ class AuthService {
   }) async {
     try {
       final response = await _dio.post(
-        '$baseUrl/api/auth/register',
+        '/auth/register',
         data: {
           'email': email,
           'password': password,
@@ -48,14 +43,13 @@ class AuthService {
     }
   }
 
-  /// DEPRECATED: Login user
   Future<Map<String, dynamic>> login({
     required String email,
     required String password,
   }) async {
     try {
       final response = await _dio.post(
-        '$baseUrl/api/auth/login',
+        '/auth/login',
         data: {
           'email': email,
           'password': password,
@@ -76,10 +70,9 @@ class AuthService {
     }
   }
 
-  /// DEPRECATED: Logout
   Future<void> logout() async {
     try {
-      await _dio.post('$baseUrl/api/auth/logout');
+      await _dio.post('/auth/logout');
     } catch (e) {
       developer.log('Logout error: $e', name: 'AuthService');
     }

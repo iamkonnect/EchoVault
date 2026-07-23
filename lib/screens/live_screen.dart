@@ -41,7 +41,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
 
   void _showLiveDescriptionDialog({required bool isArtist}) {
     final user = ref.read(userProvider);
-    
+
     // Check authentication first
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -76,7 +76,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         backgroundColor: const Color(0xFF1a1a1a),
         title: Text(
           isArtist ? 'Start Your Live Stream' : 'Request a Live Stream',
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style:
+              const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         content: SingleChildScrollView(
           child: Column(
@@ -86,7 +87,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
               // Title
               const Text(
                 'Stream Title',
-                style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -108,7 +112,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
               // Description
               const Text(
                 'Description',
-                style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -116,7 +123,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                 maxLines: 3,
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  hintText: 'What is your live stream about? Tell viewers what to expect...',
+                  hintText:
+                      'What is your live stream about? Tell viewers what to expect...',
                   hintStyle: const TextStyle(color: Colors.white30),
                   filled: true,
                   fillColor: Colors.white10,
@@ -131,7 +139,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
               // Category
               const Text(
                 'Category',
-                style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextField(
@@ -154,7 +165,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white70)),
           ),
           TextButton(
             onPressed: () async {
@@ -186,7 +198,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                 // Artist: Start streaming immediately
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Starting your live stream...')),
+                    const SnackBar(
+                        content: Text('Starting your live stream...')),
                   );
                 }
 
@@ -199,9 +212,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                     }
                     return;
                   }
-                  
+
                   final artistService = ref.read(artistServiceProvider);
-                  final result = await artistService.startLiveStream(title: title);
+                  final result =
+                      await artistService.startLiveStream(title: title);
 
                   if (result['success']) {
                     final apiStreamData = result['data'] ?? streamData;
@@ -217,17 +231,21 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Error: ${result['error'] ?? 'Failed to start stream'}'),
+                          content: Text(
+                              'Error: ${result['error'] ?? 'Failed to start stream'}'),
                           backgroundColor: Colors.red,
                         ),
                       );
                     }
                   }
                 } catch (e) {
-                  developer.log('Error starting stream: $e', name: 'LiveScreen');
+                  developer.log('Error starting stream: $e',
+                      name: 'LiveScreen');
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                      SnackBar(
+                          content: Text('Error: $e'),
+                          backgroundColor: Colors.red),
                     );
                   }
                 }
@@ -236,7 +254,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Your request has been sent to creators!'),
+                      content:
+                          const Text('Your request has been sent to creators!'),
                       backgroundColor: Colors.green[700],
                       duration: const Duration(seconds: 2),
                     ),
@@ -246,7 +265,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
             },
             child: Text(
               isArtist ? 'Go Live' : 'Send Request',
-              style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  color: Colors.purple, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -257,19 +277,17 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
   Future<void> fetchLiveStreams() async {
     setState(() => loading = true);
     try {
-      // Use dynamic API endpoint based on deployment
-      final baseUrl = ApiConfig.baseUrl.isEmpty
-          ? '${Uri.base.origin}/api'
-          : '${ApiConfig.baseUrl}/api';
-      
-      final response = await http.get(
-        Uri.parse('$baseUrl/live/streams/active'),
-      ).timeout(const Duration(seconds: 30));
-      
+      final response = await http
+          .get(
+            Uri.parse('${ApiConfig.baseUrl}/live/streams/active'),
+          )
+          .timeout(const Duration(seconds: 30));
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         setState(() {
-          liveStreams = List<Map<String, dynamic>>.from(data['data'] ?? data ?? []);
+          liveStreams =
+              List<Map<String, dynamic>>.from(data['data'] ?? data ?? []);
           loading = false;
         });
         return;
@@ -279,7 +297,6 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
           name: 'LiveScreen', level: 1000);
     }
 
-    // No streams available
     setState(() {
       liveStreams = [];
       loading = false;
@@ -298,7 +315,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       _showAuthModal();
       return;
     }
-    
+
     final updatedStream = Map<String, dynamic>.from(stream);
     updatedStream['hostId'] = stream['artist'];
     updatedStream['isBroadcaster'] = user.id == updatedStream['hostId'];
@@ -316,12 +333,15 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       child: thumbnail != null
           ? ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image(
-                image: AssetImage('assets/$thumbnail'),
+              child: Image.network(
+                thumbnail.startsWith('http')
+                    ? thumbnail
+                    : 'https://ui-avatars.com/api/?name=Live+Stream&background=8B5CF6&color=ffffff&size=400',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Center(
-                    child: Icon(Icons.image_not_supported, color: Colors.grey[400], size: 48),
+                    child: Icon(Icons.image_not_supported,
+                        color: Colors.grey[400], size: 48),
                   );
                 },
               ),
@@ -342,9 +362,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
       floatingActionButton: isAuthenticated
           ? (isArtist
               ? // Artist Button
-                Container(
+              Container(
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFF9C27B0), Color(0xFFE91E63)]),
+                    gradient: const LinearGradient(
+                        colors: [Color(0xFF9C27B0), Color(0xFFE91E63)]),
                     borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
@@ -359,7 +380,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                     onPressed: () => _showLiveDescriptionDialog(isArtist: true),
                     backgroundColor: Colors.transparent,
                     elevation: 0,
-                    icon: const Icon(Icons.videocam, color: Colors.white, size: 24),
+                    icon: const Icon(Icons.videocam,
+                        color: Colors.white, size: 24),
                     label: const Text(
                       'Go LIVE',
                       style: TextStyle(
@@ -371,9 +393,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                   ),
                 )
               : // Listener Button
-                Container(
+              Container(
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [Color(0xFF2196F3), Color(0xFF00BCD4)]),
+                    gradient: const LinearGradient(
+                        colors: [Color(0xFF2196F3), Color(0xFF00BCD4)]),
                     borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
@@ -385,10 +408,12 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                   ),
                   child: FloatingActionButton.extended(
                     heroTag: 'requestLive',
-                    onPressed: () => _showLiveDescriptionDialog(isArtist: false),
+                    onPressed: () =>
+                        _showLiveDescriptionDialog(isArtist: false),
                     backgroundColor: Colors.transparent,
                     elevation: 0,
-                    icon: const Icon(Icons.favorite, color: Colors.white, size: 24),
+                    icon: const Icon(Icons.favorite,
+                        color: Colors.white, size: 24),
                     label: const Text(
                       'Request LIVE',
                       style: TextStyle(
@@ -400,9 +425,10 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                   ),
                 ))
           : // Not authenticated - show sign in button
-            Container(
+          Container(
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [Color(0xFF6D28D9), Color(0xFF8B5CF9)]),
+                gradient: const LinearGradient(
+                    colors: [Color(0xFF6D28D9), Color(0xFF8B5CF9)]),
                 borderRadius: BorderRadius.circular(30),
                 boxShadow: [
                   BoxShadow(
@@ -429,7 +455,7 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
               ),
             ),
       body: loading
-              ? const Center(child: CircularProgressIndicator(color: Colors.white))
+          ? const Center(child: CircularProgressIndicator(color: Colors.white))
           : liveStreams.isEmpty
               ? const Center(
                   child: Text('No live streams',
@@ -457,7 +483,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                     top: 8,
                                     left: 8,
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
                                       decoration: BoxDecoration(
                                         color: Colors.red,
                                         borderRadius: BorderRadius.circular(4),
@@ -465,7 +492,8 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                                       child: const Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Icon(Icons.circle, color: Colors.white, size: 8),
+                                          Icon(Icons.circle,
+                                              color: Colors.white, size: 8),
                                           SizedBox(width: 4),
                                           Text(
                                             'LIVE',
@@ -496,19 +524,22 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                               const SizedBox(height: 4),
                               // Artist and viewers
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Text(
                                       stream['artist'] ?? 'Unknown',
-                                      style: const TextStyle(color: Colors.grey),
+                                      style:
+                                          const TextStyle(color: Colors.grey),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                   Text(
                                     '${stream['viewers'] ?? 0} viewers',
-                                    style: const TextStyle(color: Colors.purple),
+                                    style:
+                                        const TextStyle(color: Colors.purple),
                                   ),
                                 ],
                               ),
@@ -516,33 +547,39 @@ class _LiveScreenState extends ConsumerState<LiveScreen> {
                               // Description
                               Text(
                                 stream['description'] ?? '',
-                                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                style: const TextStyle(
+                                    color: Colors.grey, fontSize: 12),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 8),
                               // Category and Join button
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
                                       color: Colors.grey[800],
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
                                       stream['category'] ?? 'General',
-                                      style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                      style: const TextStyle(
+                                          color: Colors.white70, fontSize: 12),
                                     ),
                                   ),
                                   ElevatedButton.icon(
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.purple,
                                       foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 6),
                                     ),
-                                    icon: const Icon(Icons.play_arrow, size: 16),
+                                    icon:
+                                        const Icon(Icons.play_arrow, size: 16),
                                     label: const Text('Join'),
                                     onPressed: () => _joinLiveStream(stream),
                                   ),
