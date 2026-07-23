@@ -46,13 +46,29 @@ class ApiClient {
     };
   }
 
+  Uri _buildUrl(String endpoint) {
+    final mappedEndpoint = EndpointMapper.mapEndpoint(endpoint);
+    String base = baseUrl;
+    if (base.isEmpty) {
+      base = Uri.base.origin;
+    }
+
+    String cleanBase = base.endsWith('/') ? base.substring(0, base.length - 1) : base;
+    String cleanEndpoint = mappedEndpoint.startsWith('/') ? mappedEndpoint : '/$mappedEndpoint';
+
+    if (cleanBase.endsWith('/api') && cleanEndpoint.startsWith('/api/')) {
+      cleanEndpoint = cleanEndpoint.substring(4);
+    } else if (cleanBase.endsWith('/api') && cleanEndpoint == '/api') {
+      cleanEndpoint = '';
+    }
+
+    return Uri.parse('$cleanBase$cleanEndpoint');
+  }
+
   /// GET request with automatic endpoint mapping
   Future<T> get<T>(String endpoint) async {
     try {
-      final mappedEndpoint = EndpointMapper.mapEndpoint(endpoint);
-      final url = baseUrl.isEmpty
-          ? Uri.parse('${Uri.base.origin}$mappedEndpoint')
-          : Uri.parse('$baseUrl$mappedEndpoint');
+      final url = _buildUrl(endpoint);
 
       if (ApiConfig.enableDebugLogging) {
         developer.log('GET $url', name: _tag);
@@ -78,10 +94,7 @@ class ApiClient {
   Future<T> post<T>(String endpoint,
       {Map<String, dynamic>? body, Map<String, dynamic>? data}) async {
     try {
-      final mappedEndpoint = EndpointMapper.mapEndpoint(endpoint);
-      final url = baseUrl.isEmpty
-          ? Uri.parse('${Uri.base.origin}$mappedEndpoint')
-          : Uri.parse('$baseUrl$mappedEndpoint');
+      final url = _buildUrl(endpoint);
       final bodyData = body ?? data ?? {};
 
       if (ApiConfig.enableDebugLogging) {
@@ -108,10 +121,7 @@ class ApiClient {
   /// PUT request with automatic endpoint mapping
   Future<T> put<T>(String endpoint, {Map<String, dynamic>? body}) async {
     try {
-      final mappedEndpoint = EndpointMapper.mapEndpoint(endpoint);
-      final url = baseUrl.isEmpty
-          ? Uri.parse('${Uri.base.origin}$mappedEndpoint')
-          : Uri.parse('$baseUrl$mappedEndpoint');
+      final url = _buildUrl(endpoint);
       final bodyData = body ?? {};
 
       if (ApiConfig.enableDebugLogging) {
@@ -138,10 +148,7 @@ class ApiClient {
   /// DELETE request with automatic endpoint mapping
   Future<T> delete<T>(String endpoint) async {
     try {
-      final mappedEndpoint = EndpointMapper.mapEndpoint(endpoint);
-      final url = baseUrl.isEmpty
-          ? Uri.parse('${Uri.base.origin}$mappedEndpoint')
-          : Uri.parse('$baseUrl$mappedEndpoint');
+      final url = _buildUrl(endpoint);
 
       if (ApiConfig.enableDebugLogging) {
         developer.log('DELETE $url', name: _tag);
@@ -166,13 +173,8 @@ class ApiClient {
   /// Form data upload with automatic endpoint mapping
   Future<T> postFormData<T>(String endpoint, dynamic data) async {
     try {
-      // Map endpoint if needed
-      final mappedEndpoint = EndpointMapper.mapEndpoint(endpoint);
-
       if (ApiConfig.enableDebugLogging) {
-        final debugUrl = baseUrl.isEmpty
-            ? '${Uri.base.origin}$mappedEndpoint'
-            : '$baseUrl$mappedEndpoint';
+        final debugUrl = _buildUrl(endpoint).toString();
         developer.log('FORM POST $debugUrl', name: _tag);
       }
 
