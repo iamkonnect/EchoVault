@@ -14,13 +14,13 @@ class ApiConfig {
         return 'http://localhost:5000/api';
       }
 
-      // Production: Use HTTPS for Traefik/admin.echovaultz.com
+      // Production: Use HTTPS for Traefik/api.echovaultz.com
       if (windowLocation.contains('echovaultz.com')) {
-        return 'https://admin.echovaultz.com/api';
+        return 'https://api.echovaultz.com/api';
       }
 
       // Fallback to production HTTPS
-      return 'https://admin.echovaultz.com/api';
+      return 'https://api.echovaultz.com/api';
     }
 
     // Mobile: Android emulator
@@ -38,10 +38,10 @@ class ApiConfig {
 
       // Production: Use HTTPS for Traefik
       if (windowLocation.contains('echovaultz.com')) {
-        return 'https://admin.echovaultz.com';
+        return 'https://api.echovaultz.com';
       }
 
-      return 'https://admin.echovaultz.com';
+      return 'https://api.echovaultz.com';
     }
 
     return 'http://10.0.2.2:5000';
