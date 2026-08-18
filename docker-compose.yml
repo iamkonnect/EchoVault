@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: echovault-frontend
+    ports:
+      - "3000:80"
+    environment:
+      - FLUTTER_ENV=production
+    restart: unless-stopped
+    networks:
+      - echovault-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.echovault-frontend.rule=Host(`echovaultz.com`)"
+      - "traefik.http.routers.echovault-frontend.entrypoints=websecure"
+      - "traefik.http.routers.echovault-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.echovault-frontend.loadbalancer.server.port=80"
+
+networks:
+  echovault-network:
+    driver: bridge
