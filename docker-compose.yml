@@ -5,6 +5,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      # ✅ Pass API_BASE_URL to Flutter at build time
+      args:
+        API_BASE_URL: https://api.echovaultz.com
     container_name: echovault-frontend
     ports:
       - "3000:80"
