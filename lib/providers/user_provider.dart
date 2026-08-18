@@ -100,11 +100,30 @@ class UserNotifier extends StateNotifier<User?> {
     state = null;
   }
 
+  // ✅ FIX: Updated deactivate to call backend API
   Future<void> deactivate() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-    await authService.logout('');
-    state = null;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString(_tokenKey);
+      
+      if (token != null) {
+        final result = await authService.deactivateAccount(token);
+        developer.log('Deactivate result: $result', name: 'UserProvider');
+      }
+      
+      // Clear local data
+      await prefs.clear();
+      await authService.logout(token ?? '');
+      state = null;
+      
+      developer.log('Account deactivated', name: 'UserProvider');
+    } catch (e) {
+      developer.log('Deactivation error: $e', name: 'UserProvider');
+      // Still clear local data even if API call fails
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+      state = null;
+    }
   }
 
   /// Sign in with backend API

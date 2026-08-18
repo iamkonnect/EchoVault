@@ -26,12 +26,40 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     super.dispose();
   }
 
+  // ✅ FIX: Email validation
+  bool _isValidEmail(String email) {
+    final RegExp emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+    return emailRegex.hasMatch(email);
+  }
+
+  // ✅ FIX: Password strength validation
+  bool _isStrongPassword(String password) {
+    return password.length >= 8 &&
+        password.contains(RegExp(r'[A-Z]')) &&
+        password.contains(RegExp(r'[a-z]')) &&
+        password.contains(RegExp(r'[0-9]'));
+  }
+
   Future<void> _handleAuth() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
       _showError('Please fill all fields');
+      return;
+    }
+
+    // ✅ FIX: Add email validation
+    if (!_isValidEmail(email)) {
+      _showError('Please enter a valid email address');
+      return;
+    }
+
+    // ✅ FIX: Add password strength validation
+    if (!_isStrongPassword(password)) {
+      _showError('Password must be 8+ chars with uppercase, lowercase, and number');
       return;
     }
 
@@ -69,7 +97,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   /// Launches OAuth URL for Google or Apple sign-in
   /// The backend handles the OAuth flow and redirects back to app via auth callback
-Future<void> _launchOAuth(String provider) async {
+  Future<void> _launchOAuth(String provider) async {
     final baseUrl = ApiConfig.baseUrl;
     final oauthUrl = '$baseUrl/auth/$provider';
 
@@ -274,7 +302,7 @@ Future<void> _launchOAuth(String provider) async {
                                       SnackBar(
                                         content: Text(message ??
                                             'Reset link sent if email exists'),
-                                        backgroundColor: Color(0xFF7c3aed),
+                                        backgroundColor: const Color(0xFF7c3aed),
                                       ),
                                     );
                                   }
@@ -293,6 +321,7 @@ Future<void> _launchOAuth(String provider) async {
                         style: TextStyle(color: Colors.grey[400], fontSize: 13),
                       ),
                     ),
+                ),
                 const SizedBox(height: 16),
 
                 // Sign In / Sign Up button
@@ -424,4 +453,3 @@ Future<void> _launchOAuth(String provider) async {
     );
   }
 }
-

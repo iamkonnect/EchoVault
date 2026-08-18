@@ -261,6 +261,39 @@ class AuthService {
     }
   }
 
+  /// ✅ FIX: Deactivate account
+  Future<Map<String, dynamic>> deactivateAccount(String token) async {
+    try {
+      final response = await _dio.post(
+        '/auth/deactivate-account',
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+
+      developer.log('Account deactivation success', name: _tag);
+
+      return {
+        'success': response.data['success'] ?? false,
+        'message': response.data['message'] ?? 'Account deactivated',
+      };
+    } on DioException catch (e) {
+      developer.log('Deactivation error: ${e.message}', name: _tag);
+      return {
+        'success': false,
+        'message': e.response?.data['message'] ?? 'Deactivation failed',
+        'error': e.message,
+      };
+    } catch (e) {
+      developer.log('Deactivation catch error: $e', name: _tag);
+      return {
+        'success': false,
+        'message': 'An unexpected error occurred',
+        'error': e.toString(),
+      };
+    }
+  }
+
   /// Get auth token from the current session
   String? getToken() {
     return _dio.options.headers['Authorization']
