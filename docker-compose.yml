@@ -18,9 +18,16 @@ services:
       - echovault-network
     labels:
       - "traefik.enable=true"
+      # ✅ Route echovaultz.com to frontend
       - "traefik.http.routers.echovault-frontend.rule=Host(`echovaultz.com`)"
       - "traefik.http.routers.echovault-frontend.entrypoints=websecure"
       - "traefik.http.routers.echovault-frontend.tls.certresolver=letsencrypt"
+      # ✅ NEW: Route admin.echovaultz.com to frontend (admin interface)
+      - "traefik.http.routers.echovault-admin.rule=Host(`admin.echovaultz.com`)"
+      - "traefik.http.routers.echovault-admin.entrypoints=websecure"
+      - "traefik.http.routers.echovault-admin.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.echovault-admin.service=echovault-frontend"
+      # ✅ Service configuration
       - "traefik.http.services.echovault-frontend.loadbalancer.server.port=80"
 
 networks:
