@@ -2,45 +2,52 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
 class ApiConfig {
+  // ✅ Production API URLs - Fixed for echovaultz.com deployment
+  static const String productionApiUrl = 'https://api.echovaultz.com/api';
+  static const String productionRealtimeUrl = 'https://api.echovaultz.com';
+
+  // ✅ API base URL from build-time environment variable
+  // Build with: flutter build web --release --dart-define=API_BASE_URL=https://api.echovaultz.com/api
+  static const String apiBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://api.echovaultz.com/api',
+  );
+
   // Dynamic API base URL based on deployment environment
+  // IMPORTANT: All production requests go to https://api.echovaultz.com/api
+  // All Socket.io connections go to https://api.echovaultz.com (no /api suffix)
   static String get baseUrl {
     if (kIsWeb) {
       final windowLocation = Uri.base.toString();
-      
+
       // Development: localhost HTTP
-      if (windowLocation.contains('localhost') || windowLocation.contains('127.0.0.1')) {
-        return 'http://localhost:5000';
+      if (windowLocation.contains('localhost') ||
+          windowLocation.contains('127.0.0.1')) {
+        return 'http://localhost:5000/api';
       }
-      
-      // Production: Use HTTPS for Traefik/admin.echovaultz.com
-      if (windowLocation.contains('echovaultz.com')) {
-        return 'https://admin.echovaultz.com';
-      }
-      
-      // Fallback to production HTTPS
-      return 'https://admin.echovaultz.com';
+
+      // Production: Always use api.echovaultz.com/api for REST calls
+      // This applies to echovaultz.com, admin.echovaultz.com, or any subdomain
+      return productionApiUrl;
     }
-    
+
     // Mobile: Android emulator
-    return 'http://10.0.2.2:5000';
+    return 'http://10.0.2.2:5000/api';
   }
 
   static String get realtimeUrl {
     if (kIsWeb) {
       final windowLocation = Uri.base.toString();
-      
-      if (windowLocation.contains('localhost') || windowLocation.contains('127.0.0.1')) {
+
+      if (windowLocation.contains('localhost') ||
+          windowLocation.contains('127.0.0.1')) {
         return 'http://localhost:5000';
       }
-      
-      // Production: Use HTTPS for Traefik
-      if (windowLocation.contains('echovaultz.com')) {
-        return 'https://admin.echovaultz.com';
-      }
-      
-      return 'https://admin.echovaultz.com';
+
+      // Production: Always use api.echovaultz.com for Socket.io (no /api suffix)
+      return productionRealtimeUrl;
     }
-    
+
     return 'http://10.0.2.2:5000';
   }
 
@@ -48,7 +55,7 @@ class ApiConfig {
   static const bool enableDebugLogging = true;
   static const int requestTimeout = 30;
   static const bool enableResponseNormalization = false;
-  
+
   // Standard Gifting Icon
   static const IconData giftingIcon = Icons.card_giftcard;
 
@@ -65,39 +72,46 @@ class ApiConfig {
   }
 
   // ============ AUTHENTICATION ENDPOINTS ============
-  static String get registerEndpoint => '$baseUrl/api/auth/register';
-  static String get loginEndpoint => '$baseUrl/api/auth/login';
-  static String get logoutEndpoint => '$baseUrl/api/auth/logout';
-  
+  static String get registerEndpoint => '$baseUrl/auth/register';
+  static String get loginEndpoint => '$baseUrl/auth/login';
+  static String get logoutEndpoint => '$baseUrl/auth/logout';
+
   // ============ ARTIST ENDPOINTS ============
-  static String get artistDashboardEndpoint => '$baseUrl/api/artist/dashboard';
-  static String get artistInsightsEndpoint => '$baseUrl/api/artist/insights';
-  static String get artistLiveInsightsEndpoint => '$baseUrl/api/artist/live-insights';
-  static String get artistMusicEndpoint => '$baseUrl/api/artist/music';
-  static String get artistShortsInsightsEndpoint => '$baseUrl/api/artist/shorts-insights';
-  static String get artistEarningsEndpoint => '$baseUrl/api/artist/earnings';
-  static String get artistWithdrawalsEndpoint => '$baseUrl/api/artist/withdrawals';
-  static String get artistWithdrawEndpoint => '$baseUrl/api/artist/withdraw';
-  static String get artistStartStreamEndpoint => '$baseUrl/api/artist/start-stream';
-  static String get artistStopStreamEndpoint => '$baseUrl/api/artist/stop-stream';
-  
+  static String get artistDashboardEndpoint => '$baseUrl/artist/dashboard';
+  static String get artistInsightsEndpoint => '$baseUrl/artist/insights';
+  static String get artistLiveInsightsEndpoint =>
+      '$baseUrl/artist/live-insights';
+  static String get artistMusicEndpoint => '$baseUrl/artist/music';
+  static String get artistShortsInsightsEndpoint =>
+      '$baseUrl/artist/shorts-insights';
+  static String get artistEarningsEndpoint => '$baseUrl/artist/earnings';
+  static String get artistWithdrawalsEndpoint =>
+      '$baseUrl/artist/withdrawals';
+  static String get artistWithdrawEndpoint => '$baseUrl/artist/withdraw';
+  static String get artistStartStreamEndpoint =>
+      '$baseUrl/artist/start-stream';
+  static String get artistStopStreamEndpoint =>
+      '$baseUrl/artist/stop-stream';
+
   // ============ TRACK ENDPOINTS ============
-  static String get tracksUploadEndpoint => '$baseUrl/api/tracks/upload';
-  
+  static String get tracksUploadEndpoint => '$baseUrl/tracks/upload';
+
   // ============ GIFTING ENDPOINTS ============
-  static String get giftsEndpoint => '$baseUrl/api/gifting/send';
-  static String get fetchGiftsEndpoint => '$baseUrl/api/gifting';
-  
+  static String get giftsEndpoint => '$baseUrl/gifting/send';
+  static String get fetchGiftsEndpoint => '$baseUrl/gifting';
+
   // ============ PAYMENT ENDPOINTS ============
-  static String get fetchCoinPackagesEndpoint => '$baseUrl/api/payments/coin-packages';
-  static String get initiatePaymentEndpoint => '$baseUrl/api/payments/initiate';
-  static String get paymentWebhookEndpoint => '$baseUrl/api/payments/webhook';
-  
+  static String get fetchCoinPackagesEndpoint =>
+      '$baseUrl/payments/coin-packages';
+  static String get initiatePaymentEndpoint => '$baseUrl/payments/initiate';
+  static String get paymentWebhookEndpoint => '$baseUrl/payments/webhook';
+
   // ============ LIVE STREAM ENDPOINTS ============
-  static String get liveStreamEndpoint => '$baseUrl/api/artist/start-stream';
-  static String get liveStreamStopEndpoint => '$baseUrl/api/artist/stop-stream';
-  static String get streamJoinEndpoint => '$baseUrl/api/live/streams/join-request';
-  
+  static String get liveStreamEndpoint => '$baseUrl/artist/start-stream';
+  static String get liveStreamStopEndpoint => '$baseUrl/artist/stop-stream';
+  static String get streamJoinEndpoint =>
+      '$baseUrl/live/streams/join-request';
+
   // ============ ADS ENDPOINTS ============
-  static String get adsEndpoint => '$baseUrl/api/ads/log-impression';
+  static String get adsEndpoint => '$baseUrl/ads/log-impression';
 }

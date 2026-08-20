@@ -19,9 +19,10 @@ class TokenRefreshService {
   Future<void> initialize() async {
     final prefs = await SharedPreferences.getInstance();
     _currentToken = prefs.getString(_tokenKey);
-    
+
     if (_currentToken != null) {
-      _tokenExpiresAt = DateTime.now().add(const Duration(seconds: _tokenExpiration));
+      _tokenExpiresAt =
+          DateTime.now().add(const Duration(seconds: _tokenExpiration));
       await _apiClient.setToken(_currentToken!);
     }
   }
@@ -29,8 +30,9 @@ class TokenRefreshService {
   /// Save new token
   Future<void> saveToken(String token) async {
     _currentToken = token;
-    _tokenExpiresAt = DateTime.now().add(const Duration(seconds: _tokenExpiration));
-    
+    _tokenExpiresAt =
+        DateTime.now().add(const Duration(seconds: _tokenExpiration));
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_tokenKey, token);
     await _apiClient.setToken(token);
@@ -42,10 +44,10 @@ class TokenRefreshService {
   /// Check if token is expired or about to expire (within 5 minutes)
   bool isTokenExpiredOrExpiring() {
     if (_tokenExpiresAt == null) return true;
-    
+
     final now = DateTime.now();
     final fiveMinutesFromNow = now.add(const Duration(minutes: 5));
-    
+
     return _tokenExpiresAt!.isBefore(fiveMinutesFromNow);
   }
 
@@ -58,13 +60,14 @@ class TokenRefreshService {
       }
 
       final response = await _apiClient.post<Map<String, dynamic>>(
-        '/api/auth/refresh',
+        '/auth/refresh',
         data: {'token': _currentToken},
       );
 
       if (response['token'] != null) {
         await saveToken(response['token']);
-        developer.log('Token refreshed successfully', name: 'TokenRefreshService');
+        developer.log('Token refreshed successfully',
+            name: 'TokenRefreshService');
         return true;
       }
 
@@ -82,10 +85,11 @@ class TokenRefreshService {
     try {
       if (_currentToken == null) return false;
 
-      await _apiClient.post('/api/auth/verify', data: {});
+      await _apiClient.post('/auth/verify', data: {});
       return true;
     } catch (e) {
-      developer.log('Token verification failed: $e', name: 'TokenRefreshService');
+      developer.log('Token verification failed: $e',
+          name: 'TokenRefreshService');
       return false;
     }
   }
@@ -94,7 +98,7 @@ class TokenRefreshService {
   Future<void> clearToken() async {
     _currentToken = null;
     _tokenExpiresAt = null;
-    
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
     await prefs.remove(_refreshTokenKey);
@@ -107,7 +111,8 @@ class TokenRefreshService {
       'hasToken': _currentToken != null,
       'expiresAt': _tokenExpiresAt?.toString(),
       'isExpired': isTokenExpiredOrExpiring(),
-      'secondsUntilExpiry': _tokenExpiresAt?.difference(DateTime.now()).inSeconds ?? 0,
+      'secondsUntilExpiry':
+          _tokenExpiresAt?.difference(DateTime.now()).inSeconds ?? 0,
     };
   }
 }
@@ -214,7 +219,8 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
           }
         }
       } catch (e) {
-        developer.log('Auto-refresh on 401 failed: $e', name: 'TokenRefreshService');
+        developer.log('Auto-refresh on 401 failed: $e',
+            name: 'TokenRefreshService');
       }
     }
 

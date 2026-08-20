@@ -9,7 +9,7 @@ class GiftService {
   /// Retrieves available coin packages for the user to purchase.
   Future<List<dynamic>> getCoinPackages() async {
     try {
-      final response = await apiClient.get('/api/gifts/packages');
+      final response = await apiClient.get('/gifts/packages');
       return response['data'] ?? [];
     } catch (e) {
       rethrow;
@@ -19,7 +19,7 @@ class GiftService {
   /// Retrieves all available gifts from the backend.
   Future<List<dynamic>> getAvailableGifts() async {
     try {
-      final response = await apiClient.get('/api/gifting');
+      final response = await apiClient.get('/gifting');
       return response['data'] ?? [];
     } catch (e) {
       rethrow;
@@ -27,10 +27,6 @@ class GiftService {
   }
 
   /// Sends a gift to a creator.
-  /// [receiverId] is the ID of the user receiving the gift.
-  /// [amount] is the monetary value of the gift.
-  /// [giftId] is the ID of the gift template.
-  /// [streamId] (optional) is the ID of the live stream.
   Future<Map<String, dynamic>> sendGift({
     required String receiverId,
     required double amount,
@@ -39,7 +35,7 @@ class GiftService {
     String? streamId,
   }) async {
     try {
-      return await apiClient.post('/api/gifting/send', body: {
+      return await apiClient.post('/gifting/send', body: {
         'receiverId': receiverId,
         'amount': amount,
         'giftId': giftId,

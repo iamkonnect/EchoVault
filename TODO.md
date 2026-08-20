@@ -1,9 +1,8 @@
-# Fix Image Path & Deployment Issues
+# Frontend Container Redeploy TODO
 
-## Steps
-- [x] 1. Delete `assets/assets/` directory (contains empty `featured_echo_1.jpeg`)
-- [x] 2. Edit `pubspec.yaml` - remove `- assets/assets/` line
-- [x] 3. Edit `Dockerfile` - add `RUN chmod -R a+rX /usr/share/nginx/html`
-- [ ] 4. Run `flutter clean && flutter pub get && flutter build web --release`
-- [ ] 5. Commit and push to main branch
-
+- [ ] Inspect Docker and nginx configuration files (`Dockerfile`, `nginx.conf`, `../echo-vault-backend/docker-compose.yml`)
+- [ ] Confirm whether build output is copied to `/usr/share/nginx/html`
+- [ ] Apply required config/file edits
+- [ ] Rebuild/redeploy frontend container
+- [ ] Verify assets exist in container web root
+- [ ] Verify nginx serves `/` and key assets successfully

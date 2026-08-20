@@ -16,7 +16,7 @@ class CompatibilityService {
   Future<List<Map<String, dynamic>>> searchTracks(String query) async {
     try {
       final response = await apiClient.get<Map<String, dynamic>>(
-        '/api/tracks/search?q=$query',
+        '/tracks/search?q=$query',
       );
 
       final data = response['data'] ?? [];
@@ -24,13 +24,13 @@ class CompatibilityService {
     } catch (e) {
       developer.log('Search failed (expected - not yet implemented): $e',
           name: 'CompatibilityService');
-      
+
       // Return cached results if available
       final cached = cacheService.getCachedData('search_$query');
       if (cached != null) {
         return List<Map<String, dynamic>>.from(cached['results'] ?? []);
       }
-      
+
       // Return empty list as graceful fallback
       return [];
     }
@@ -42,17 +42,17 @@ class CompatibilityService {
   Future<Map<String, dynamic>> getAlbum(String id) async {
     try {
       final response = await apiClient.get<Map<String, dynamic>>(
-        '/api/albums/$id',
+        '/albums/$id',
       );
       return response;
     } catch (e) {
       developer.log('Album fetch failed (expected - not yet implemented): $e',
           name: 'CompatibilityService');
-      
+
       // Return cached if available
       final cached = cacheService.getCachedData('album_$id');
       if (cached != null) return cached;
-      
+
       // Return empty as graceful fallback
       return {'success': false, 'data': null};
     }
@@ -62,7 +62,7 @@ class CompatibilityService {
   Future<List<Map<String, dynamic>>> getAlbumTracks(String id) async {
     try {
       final response = await apiClient.get<Map<String, dynamic>>(
-        '/api/albums/$id/tracks',
+        '/albums/$id/tracks',
       );
 
       final data = response['data'] ?? [];
@@ -81,17 +81,17 @@ class CompatibilityService {
   Future<Map<String, dynamic>> getArtist(String id) async {
     try {
       final response = await apiClient.get<Map<String, dynamic>>(
-        '/api/artists/$id',
+        '/artists/$id',
       );
       return response;
     } catch (e) {
       developer.log(
           'Artist profile fetch failed (expected - not yet implemented): $e',
           name: 'CompatibilityService');
-      
+
       final cached = cacheService.getCachedData('artist_$id');
       if (cached != null) return cached;
-      
+
       return {'success': false, 'data': null};
     }
   }
@@ -100,7 +100,7 @@ class CompatibilityService {
   Future<List<Map<String, dynamic>>> getArtistTracks(String id) async {
     try {
       final response = await apiClient.get<Map<String, dynamic>>(
-        '/api/artists/$id/tracks',
+        '/artists/$id/tracks',
       );
 
       final data = response['data'] ?? [];
@@ -119,17 +119,17 @@ class CompatibilityService {
   Future<Map<String, dynamic>> getPlaylist(String id) async {
     try {
       final response = await apiClient.get<Map<String, dynamic>>(
-        '/api/playlists/$id',
+        '/playlists/$id',
       );
       return response;
     } catch (e) {
       developer.log(
           'Playlist fetch failed (expected - not yet implemented): $e',
           name: 'CompatibilityService');
-      
+
       final cached = cacheService.getCachedData('playlist_$id');
       if (cached != null) return cached;
-      
+
       return {'success': false, 'data': null};
     }
   }
@@ -140,7 +140,7 @@ class CompatibilityService {
   Future<Map<String, dynamic>> getUserProfile() async {
     try {
       final response = await apiClient.get<Map<String, dynamic>>(
-        '/api/user/profile',
+        '/user/profile',
       );
       return response;
     } catch (e) {
@@ -157,7 +157,7 @@ class CompatibilityService {
   Future<List<Map<String, dynamic>>> getLikedTracks() async {
     try {
       final response = await apiClient.get<Map<String, dynamic>>(
-        '/api/user/liked-tracks',
+        '/user/liked-tracks',
       );
 
       final data = response['data'] ?? [];
@@ -166,13 +166,13 @@ class CompatibilityService {
       developer.log(
           'Liked tracks fetch failed (expected - not yet implemented): $e',
           name: 'CompatibilityService');
-      
+
       // Return cached liked tracks
       final cached = cacheService.getCachedData('liked_tracks');
       if (cached != null) {
         return List<Map<String, dynamic>>.from(cached['tracks'] ?? []);
       }
-      
+
       return [];
     }
   }
@@ -183,7 +183,7 @@ class CompatibilityService {
   Future<List<Map<String, dynamic>>> getTracksByGenre(String genre) async {
     try {
       final response = await apiClient.get<Map<String, dynamic>>(
-        '/api/tracks/genre/$genre',
+        '/tracks/genre/$genre',
       );
 
       final data = response['data'] ?? [];
@@ -202,7 +202,7 @@ class CompatibilityService {
   Future<List<Map<String, dynamic>>> getConversations() async {
     try {
       final response = await apiClient.get<Map<String, dynamic>>(
-        '/api/messages/conversations',
+        '/messages/conversations',
       );
 
       final data = response['data'] ?? [];
@@ -221,7 +221,7 @@ class CompatibilityService {
   Future<Map<String, dynamic>> getMusicStats(String musicId) async {
     try {
       final response = await apiClient.get<Map<String, dynamic>>(
-        '/api/artist/music/$musicId/stats',
+        '/artist/music/$musicId/stats',
       );
       return response;
     } catch (e) {
@@ -241,13 +241,12 @@ class CompatibilityService {
   }) async {
     try {
       await apiClient.put<Map<String, dynamic>>(
-        '/api/artist/music/$musicId',
+        '/artist/music/$musicId',
         body: data,
       );
       return true;
     } catch (e) {
-      developer.log(
-          'Edit music failed (expected - not yet implemented): $e',
+      developer.log('Edit music failed (expected - not yet implemented): $e',
           name: 'CompatibilityService');
       return false;
     }
@@ -257,12 +256,11 @@ class CompatibilityService {
   Future<bool> deleteMusic(String musicId) async {
     try {
       await apiClient.delete(
-        '/api/artist/music/$musicId',
+        '/artist/music/$musicId',
       );
       return true;
     } catch (e) {
-      developer.log(
-          'Delete music failed (expected - not yet implemented): $e',
+      developer.log('Delete music failed (expected - not yet implemented): $e',
           name: 'CompatibilityService');
       return false;
     }
@@ -277,7 +275,7 @@ class CompatibilityService {
   }) async {
     try {
       final response = await apiClient.post<Map<String, dynamic>>(
-        '/api/artist/start-stream',
+        '/artist/start-stream',
         body: {
           'title': title,
           if (thumbnail.isNotEmpty) 'thumbnail': thumbnail,
@@ -285,8 +283,7 @@ class CompatibilityService {
       );
       return response;
     } catch (e) {
-      developer.log(
-          'Start stream failed (expected - not yet implemented): $e',
+      developer.log('Start stream failed (expected - not yet implemented): $e',
           name: 'CompatibilityService');
       return {'success': false, 'error': e.toString()};
     }
@@ -296,13 +293,12 @@ class CompatibilityService {
   Future<Map<String, dynamic>> stopLiveStream(String streamId) async {
     try {
       final response = await apiClient.post<Map<String, dynamic>>(
-        '/api/artist/stop-stream',
+        '/artist/stop-stream',
         body: {'streamId': streamId},
       );
       return response;
     } catch (e) {
-      developer.log(
-          'Stop stream failed (expected - not yet implemented): $e',
+      developer.log('Stop stream failed (expected - not yet implemented): $e',
           name: 'CompatibilityService');
       return {'success': false, 'error': e.toString()};
     }

@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/auth_service_v2.dart';
@@ -61,7 +62,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         );
       }
     } catch (e) {
-      print('Error restoring session: $e');
+      debugPrint('Error restoring session: $e');
     }
   }
 
@@ -80,7 +81,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
         final token = result['token'];
         final user = result['user'];
 
-        // Store locally
         await _saveSession(token, user);
 
         state = state.copyWith(
@@ -117,7 +117,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
         final token = result['token'];
         final user = result['user'];
 
-        // Store locally
         await _saveSession(token, user);
 
         state = state.copyWith(
@@ -144,18 +143,63 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> logout() async {
     try {
       await _authService.logout(state.token ?? '');
-      
-      // Clear local storage
+
       await _prefs.remove('auth_token');
       await _prefs.remove('user_data');
 
       state = AuthState();
     } catch (e) {
-      print('Logout error: $e');
-      // Still clear local storage even if logout fails
+      debugPrint('Logout error: $e');
       await _prefs.remove('auth_token');
       await _prefs.remove('user_data');
       state = AuthState();
+    }
+  }
+
+  // Handle OAuth callback (Google/Apple)
+  Future<void> handleOAuthCallback(String token, String? provider) async {
+    state = state.copyWith(isLoading: true);
+
+    try {
+      final result = await _authService.verifyAuth(token);
+
+      if (result['success'] == true && result['user'] != null) {
+        final user = result['user'];
+        await _saveSession(token, user);
+
+        state = state.copyWith(
+          isAuthenticated: true,
+          token: token,
+          user: user,
+          isLoading: false,
+        );
+      } else {
+        state = state.copyWith(
+            isLoading: false, error: 'OAuth verification failed');
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: 'OAuth error: $e');
+    }
+  }
+
+  // Forgot password
+  Future<String?> forgotPassword(String email) async {
+    try {
+      final result = await _authService.forgotPassword(email);
+      return result['message'] as String?;
+    } catch (e) {
+      return 'Failed to send reset email';
+    }
+  }
+
+  // Resend verification email
+  Future<String?> resendVerificationEmail() async {
+    try {
+      if (state.token == null) return 'Not authenticated';
+      final result = await _authService.resendVerification(state.token!);
+      return result['message'] as String?;
+    } catch (e) {
+      return 'Failed to send verification email';
     }
   }
 
@@ -172,7 +216,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         state = state.copyWith(token: newToken);
       }
     } catch (e) {
-      print('Token refresh error: $e');
+      debugPrint('Token refresh error: $e');
       await logout();
     }
   }
@@ -180,16 +224,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
   // Helper methods
   Future<void> _saveSession(String token, Map<String, dynamic> user) async {
     await _prefs.setString('auth_token', token);
-    await _prefs.setString('user_data', _userToJson(user));
-  }
-
-  String _userToJson(Map<String, dynamic> user) {
-    return user.toString(); // Simple conversion, use json_serializable for production
+    await _prefs.setString('user_data', json.encode(user));
   }
 
   Map<String, dynamic> _parseUserJson(String userJson) {
-    // Simple parsing, use json_serializable for production
-    return {'email': userJson};
+    try {
+      return json.decode(userJson) as Map<String, dynamic>;
+    } catch (e) {
+      debugPrint('Error parsing user JSON: $e');
+      return {};
+    }
   }
 
   String? getToken() => state.token;
@@ -199,8 +243,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 // Providers
 final authServiceProvider = Provider((ref) => AuthService());
 
-final authStateProvider =
-    StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final authService = ref.watch(authServiceProvider);
   final notifier = AuthNotifier(authService);
   notifier.initialize();

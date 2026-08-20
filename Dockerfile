@@ -1,4 +1,4 @@
-FROM ghcr.io/cirruslabs/flutter:latest AS builder
+FROM ghcr.io/cirruslabs/flutter:3.29.1 AS builder
 
 WORKDIR /app
 
@@ -6,7 +6,12 @@ COPY pubspec.yaml pubspec.lock ./
 RUN flutter pub get
 
 COPY . .
-RUN flutter build web --release
+
+# ✅ Build Flutter web with API_BASE_URL from build argument
+# Default: https://api.echovaultz.com (can be overridden at build time)
+ARG API_BASE_URL=https://api.echovaultz.com
+RUN flutter build web --release \
+    --dart-define=API_BASE_URL=${API_BASE_URL}
 
 # Serve with nginx
 FROM nginx:alpine

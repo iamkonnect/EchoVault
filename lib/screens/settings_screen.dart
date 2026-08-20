@@ -34,12 +34,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     },
   ];
 
+  // ✅ FIX #1: Email validation
+  bool _isValidEmail(String email) {
+    final RegExp emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+    return emailRegex.hasMatch(email);
+  }
+
+  // ✅ FIX #2: Password strength validation
+  bool _isStrongPassword(String password) {
+    return password.length >= 8 &&
+        password.contains(RegExp(r'[A-Z]')) &&
+        password.contains(RegExp(r'[a-z]')) &&
+        password.contains(RegExp(r'[0-9]'));
+  }
+
+  // ✅ FIX #3: Logout navigation
   Future<void> _logout() async {
     await ref.read(userProvider.notifier).logout();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Logged out successfully')),
       );
+      await Future.delayed(const Duration(milliseconds: 500));
+      Navigator.of(context).pushReplacementNamed('/auth');
     }
   }
 
@@ -73,6 +92,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             backgroundColor: Colors.red,
           ),
         );
+        await Future.delayed(const Duration(milliseconds: 500));
+        Navigator.of(context).pushReplacementNamed('/auth');
       }
     }
   }
