@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
 class ApiConfig {
+  // ✅ Production API URLs - Fixed for echovaultz.com deployment
+  static const String productionApiUrl = 'https://api.echovaultz.com/api';
+  static const String productionRealtimeUrl = 'https://api.echovaultz.com';
+
   // ✅ API base URL from build-time environment variable
   // Build with: flutter build web --release --dart-define=API_BASE_URL=https://api.echovaultz.com/api
   static const String apiBaseUrl = String.fromEnvironment(
@@ -10,8 +14,8 @@ class ApiConfig {
   );
 
   // Dynamic API base URL based on deployment environment
-  // IMPORTANT: Base URL INCLUDES /api suffix for correct routing
-  // Example: https://api.echovaultz.com/api
+  // IMPORTANT: All production requests go to https://api.echovaultz.com/api
+  // All Socket.io connections go to https://api.echovaultz.com (no /api suffix)
   static String get baseUrl {
     if (kIsWeb) {
       final windowLocation = Uri.base.toString();
@@ -22,8 +26,9 @@ class ApiConfig {
         return 'http://localhost:5000/api';
       }
 
-      // Production: Use environment-configured URL (from apiBaseUrl)
-      return apiBaseUrl;
+      // Production: Always use api.echovaultz.com/api for REST calls
+      // This applies to echovaultz.com, admin.echovaultz.com, or any subdomain
+      return productionApiUrl;
     }
 
     // Mobile: Android emulator
@@ -39,8 +44,8 @@ class ApiConfig {
         return 'http://localhost:5000';
       }
 
-      // Production: Use environment-configured URL
-      return apiBaseUrl.replaceAll('/api', '');
+      // Production: Always use api.echovaultz.com for Socket.io (no /api suffix)
+      return productionRealtimeUrl;
     }
 
     return 'http://10.0.2.2:5000';
